@@ -6,12 +6,57 @@ var Container = PIXI.Container,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite,
     TextureCache = PIXI.utils.TextureCache;
+var pearPath = 'images/pear.png';
+
+function Fruits(arr){
+    this.arr = arr;
+}
+
+Fruits.prototype.add = function(stage){
+    this.arr.push(new Sprite(TextureCache[pearPath]));
+    var newFruit = this.arr[this.arr.length -1];
+    newFruit.x = random(0, window.innerWidth -  20);
+    stage.addChild(newFruit);
+}
+
+Fruits.prototype.updateFruits = function(player){
+    for (var i = 0; i < this.arr.length; ++i){
+        this.arr[i].y += 1;
+        if (player.hit(this.arr[i])){
+            this.arr[i].visible = false;
+            this.arr.splice(i, 1);
+            --i;
+        }
+    }
+}
+
+function random(min, max){
+    return Math.random() * (max - min) + min;
+}
+
+module.exports = Fruits;
+},{}],2:[function(require,module,exports){
+//Aliases
+var Container = PIXI.Container,
+    autoDetectRenderer = PIXI.autoDetectRenderer,
+    loader = PIXI.loader,
+    resources = PIXI.loader.resources,
+    Sprite = PIXI.Sprite,
+    TextureCache = PIXI.utils.TextureCache;
 var duckRightPath = 'images/duck_right.png';
 var duckLeftPath = 'images/duck_left.png';
 var skyPath = 'images/sky.png';
+var pearPath = 'images/pear.png';
+var resources = [
+      duckRightPath,
+      duckLeftPath,
+      skyPath,
+      pearPath
+      ]
 var state;
 
 var Player = require('./player');
+var Fruits = require('./fruits');
 var player;
 var type = "WebGL";
 
@@ -29,7 +74,7 @@ var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
 
 var mousePosition = renderer.plugins.interaction.mouse.global;
 renderer.autoResize = true;
-renderer.backgroundColor = 0x3fbfff;
+renderer.backgroundColor = 0x3FBFFF;
 
 //Add the canvas to the HTML document
 document.body.appendChild(renderer.view);
@@ -39,41 +84,34 @@ var stage = new Container();
 
 // loading sprites
 var duckLeft, duckRight, sky;
+var fruitsArr = [];
+var fruits = new Fruits(fruitsArr);
 var duck = new Container();
-var dummy;
 loader
-  .add([
-      duckRightPath,
-      duckLeftPath,
-      skyPath
-      ])
+  .add(resources)
   .load(function setup() {
-        sky = new Sprite(TextureCache[skyPath]);
-        stage.addChild(sky);
+            sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
+            stage.addChild(sky);
 
-        duckRight = new Sprite(TextureCache[duckRightPath]);
-        duckLeft = new Sprite(TextureCache[duckLeftPath]);
-        duck.addChild(duckRight);
-        duck.addChild(duckLeft);
+            duckRight = new Sprite(TextureCache[duckRightPath]);
+            duckLeft = new Sprite(TextureCache[duckLeftPath]);
+            duck.addChild(duckRight);
+            duck.addChild(duckLeft);
 
-        player = new Player(duck, mousePosition);
-        duck.position.set(100,100);
-        //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
-        stage.addChild(duck);
+            player = new Player(duck, mousePosition);
+            duck.position.set(100,100);
+            //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
+            stage.addChild(duck);
 
-        dummy = new Sprite(TextureCache[duckLeftPath]);
-        dummy.position.set(500,500);
-        stage.addChild(dummy);
+            //Tell the `renderer` to `render` the `stage`
+            renderer.render(stage);
 
-        //Tell the `renderer` to `render` the `stage`
-        renderer.render(stage);
+            renderer.view.width = window.innerWidth;
+            renderer.view.height = window.innerHeight;
+            
+            state = play;
 
-        renderer.view.width = window.innerWidth;
-        renderer.view.height = window.innerHeight;
-        
-        state = play;
-
-        gameLoop();
+            gameLoop();
 });
 
 function gameLoop(){
@@ -84,26 +122,26 @@ function gameLoop(){
     renderer.render(stage);
 };
 
+var fruitCounter = 0;
 function play(){
     console.log(duck.position);
     player.updatePosition();
-    if (player.hit(dummy)){
-        dummy.tint = 0xff3300;
-    }else{
-        dummy.tint = 0xccff99;
+    fruits.updateFruits(player);
+    fruitCounter +=1;
+    if (fruitCounter >= 60){
+        fruitCounter = 0;
+        fruits.add(stage);
     }
 }
 
 window.addEventListener("resize", function(event){
-    sky.x = (window.innerWidth - sky.width) / 2;
-    sky.y = (window.innerHeight - sky.height) / 2;
-    renderer.view.width = window.innerWidth;
-    renderer.view.height = window.innerHeight;
+    renderer.view.style.width = window.innerWidth + 'px';
+    renderer.view.style.height = window.innerHeight + 'px';
 });
 
 
 
-},{"./player":517}],2:[function(require,module,exports){
+},{"./fruits":1,"./player":518}],3:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.1 11/02/2016
  *
@@ -1288,7 +1326,7 @@ window.addEventListener("resize", function(event){
   
 })(this);
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*! decimal.js v7.1.1 https://github.com/MikeMcl/decimal.js/LICENCE */
 ;(function (globalScope) {
   'use strict';
@@ -6089,7 +6127,7 @@ window.addEventListener("resize", function(event){
   }
 })(this);
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * @license Fraction.js v4.0.0 09/09/2015
  * http://www.xarg.org/2014/03/rational-numbers-in-javascript/
@@ -6888,9 +6926,9 @@ window.addEventListener("resize", function(event){
 
 })(this);
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = require('./lib/core/core');
-},{"./lib/core/core":8}],6:[function(require,module,exports){
+},{"./lib/core/core":9}],7:[function(require,module,exports){
 var core = require('./core');
 
 /**
@@ -6930,7 +6968,7 @@ function create (config) {
 // return a new instance of math.js
 module.exports = create();
 
-},{"./core":5,"./lib":434}],7:[function(require,module,exports){
+},{"./core":6,"./lib":435}],8:[function(require,module,exports){
 'use strict';
 
 var object = require('./utils/object');
@@ -7011,7 +7049,7 @@ function setLazyConstant (math, name, resolver) {
 exports.factory = factory;
 exports.lazy = false;  // no lazy loading of constants, the constants themselves are lazy when needed
 exports.math = true;   // request access to the math namespace
-},{"./utils/array":487,"./utils/bignumber/constants":493,"./utils/object":510,"./version":513}],8:[function(require,module,exports){
+},{"./utils/array":488,"./utils/bignumber/constants":494,"./utils/object":511,"./version":514}],9:[function(require,module,exports){
 var isFactory = require('./../utils/object').isFactory;
 var typedFactory = require('./typed');
 var emitter = require('./../utils/emitter');
@@ -7145,7 +7183,7 @@ exports.create = function create (options) {
   return math;
 };
 
-},{"./../utils/emitter":505,"./../utils/object":510,"./function/config":9,"./function/import":10,"./typed":11}],9:[function(require,module,exports){
+},{"./../utils/emitter":506,"./../utils/object":511,"./function/config":10,"./function/import":11,"./typed":12}],10:[function(require,module,exports){
 'use strict';
 
 var object = require('../../utils/object');
@@ -7271,7 +7309,7 @@ exports.name = 'config';
 exports.math = true; // request the math namespace as fifth argument
 exports.factory = factory;
 
-},{"../../utils/object":510}],10:[function(require,module,exports){
+},{"../../utils/object":511}],11:[function(require,module,exports){
 'use strict';
 
 var lazy = require('../../utils/object').lazy;
@@ -7568,7 +7606,7 @@ exports.name = 'import';
 exports.factory = factory;
 exports.lazy = true;
 
-},{"../../error/ArgumentsError":12,"../../utils/object":510}],11:[function(require,module,exports){
+},{"../../error/ArgumentsError":13,"../../utils/object":511}],12:[function(require,module,exports){
 var typedFunction = require('typed-function');
 var digits = require('./../utils/number').digits;
 
@@ -7806,7 +7844,7 @@ exports.create = function create(type) {
   return typed;
 };
 
-},{"./../utils/number":509,"typed-function":516}],12:[function(require,module,exports){
+},{"./../utils/number":510,"typed-function":517}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -7842,7 +7880,7 @@ ArgumentsError.prototype.isArgumentsError = true;
 
 module.exports = ArgumentsError;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 /**
@@ -7879,7 +7917,7 @@ DimensionError.prototype.isDimensionError = true;
 
 module.exports = DimensionError;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 /**
@@ -7927,7 +7965,7 @@ IndexError.prototype.isIndexError = true;
 
 module.exports = IndexError;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var ArgumentsError = require('./ArgumentsError');
@@ -7959,7 +7997,7 @@ module.exports = [
 
 // TODO: implement an InvalidValueError?
 
-},{"./ArgumentsError":12,"./DimensionError":13,"./IndexError":14}],16:[function(require,module,exports){
+},{"./ArgumentsError":13,"./DimensionError":14,"./IndexError":15}],17:[function(require,module,exports){
 'use strict';
 
 var object = require('../utils/object');
@@ -8078,7 +8116,7 @@ exports.name = 'Help';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../utils/object":510,"../utils/string":511,"./function/parser":205}],17:[function(require,module,exports){
+},{"../utils/object":511,"../utils/string":512,"./function/parser":206}],18:[function(require,module,exports){
 'use strict';
 
 var extend = require('../utils/object').extend;
@@ -8244,7 +8282,7 @@ exports.path = 'expression';
 exports.factory = factory;
 exports.math = true; // requires the math namespace as 5th argument
 
-},{"../utils/object":510,"./node/utils/customs":227,"./parse":229}],18:[function(require,module,exports){
+},{"../utils/object":511,"./node/utils/customs":228,"./parse":230}],19:[function(require,module,exports){
 module.exports = {
   'name': 'Infinity',
   'category': 'Constants',
@@ -8259,7 +8297,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = {
   'name': 'LN10',
   'category': 'Constants',
@@ -8274,7 +8312,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = {
   'name': 'LN2',
   'category': 'Constants',
@@ -8289,7 +8327,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = {
   'name': 'LOG10E',
   'category': 'Constants',
@@ -8304,7 +8342,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = {
   'name': 'LOG2E',
   'category': 'Constants',
@@ -8319,7 +8357,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = {
   'name': 'NaN',
   'category': 'Constants',
@@ -8334,7 +8372,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = {
   'name': 'SQRT1_2',
   'category': 'Constants',
@@ -8349,7 +8387,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = {
   'name': 'SQRT2',
   'category': 'Constants',
@@ -8364,7 +8402,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = {
   'name': 'e',
   'category': 'Constants',
@@ -8381,7 +8419,7 @@ module.exports = {
   'seealso': ['exp']
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = {
   'name': 'false',
   'category': 'Constants',
@@ -8395,7 +8433,7 @@ module.exports = {
   'seealso': ['true']
 };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = {
   'name': 'i',
   'category': 'Constants',
@@ -8411,7 +8449,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = {
   'name': 'null',
   'category': 'Constants',
@@ -8425,7 +8463,7 @@ module.exports = {
   'seealso': ['true', 'false']
 };
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = {
   'name': 'phi',
   'category': 'Constants',
@@ -8439,7 +8477,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = {
   'name': 'pi',
   'category': 'Constants',
@@ -8454,7 +8492,7 @@ module.exports = {
   'seealso': ['tau']
 };
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = {
   'name': 'tau',
   'category': 'Constants',
@@ -8469,7 +8507,7 @@ module.exports = {
   'seealso': ['pi']
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = {
   'name': 'true',
   'category': 'Constants',
@@ -8483,7 +8521,7 @@ module.exports = {
   'seealso': ['false']
 };
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = {
   'name': 'version',
   'category': 'Constants',
@@ -8497,7 +8535,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = {
   'name': 'bignumber',
   'category': 'Construction',
@@ -8518,7 +8556,7 @@ module.exports = {
   ]
 };
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = {
   'name': 'boolean',
   'category': 'Construction',
@@ -8541,7 +8579,7 @@ module.exports = {
   ]
 };
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = {
   'name': 'complex',
   'category': 'Construction',
@@ -8562,7 +8600,7 @@ module.exports = {
   ]
 };
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = {
   'name': 'createUnit',
   'category': 'Construction',
@@ -8582,7 +8620,7 @@ module.exports = {
   ]
 };
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = {
   'name': 'fraction',
   'category': 'Construction',
@@ -8601,7 +8639,7 @@ module.exports = {
   ]
 };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = {
   'name': 'index',
   'category': 'Construction',
@@ -8628,7 +8666,7 @@ module.exports = {
   ]
 };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = {
   'name': 'matrix',
   'category': 'Construction',
@@ -8655,7 +8693,7 @@ module.exports = {
   ]
 };
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports = {
   'name': 'number',
   'category': 'Construction',
@@ -8680,7 +8718,7 @@ module.exports = {
   ]
 };
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = {
   'name': 'sparse',
   'category': 'Construction',
@@ -8701,7 +8739,7 @@ module.exports = {
   ]
 };
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 module.exports = {
   'name': 'splitUnit',
   'category': 'Construction',
@@ -8718,7 +8756,7 @@ module.exports = {
   ]
 };
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = {
   'name': 'string',
   'category': 'Construction',
@@ -8738,7 +8776,7 @@ module.exports = {
   ]
 };
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = {
   'name': 'unit',
   'category': 'Construction',
@@ -8760,7 +8798,7 @@ module.exports = {
   ]
 };
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = {
   'name': 'config',
   'category': 'Core',
@@ -8778,7 +8816,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = {
   'name': 'import',
   'category': 'Core',
@@ -8795,7 +8833,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = {
   'name': 'typed',
   'category': 'Core',
@@ -8812,7 +8850,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = {
   'name': 'derivative',
   'category': 'Algebra',
@@ -8836,7 +8874,7 @@ module.exports = {
   ]
 };
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 module.exports = {
   'name': 'lsolve',
   'category': 'Algebra',
@@ -8855,7 +8893,7 @@ module.exports = {
   ]
 };
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 module.exports = {
   'name': 'lup',
   'category': 'Algebra',
@@ -8874,7 +8912,7 @@ module.exports = {
   ]
 };
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports = {
   'name': 'lusolve',
   'category': 'Algebra',
@@ -8893,7 +8931,7 @@ module.exports = {
   ]
 };
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 module.exports = {
   'name': 'simplify',
   'category': 'Algebra',
@@ -8914,7 +8952,7 @@ module.exports = {
   ]
 };
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 module.exports = {
   'name': 'slu',
   'category': 'Algebra',
@@ -8930,7 +8968,7 @@ module.exports = {
   ]
 };
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 module.exports = {
   'name': 'usolve',
   'category': 'Algebra',
@@ -8947,7 +8985,7 @@ module.exports = {
   ]
 };
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 module.exports = {
   'name': 'abs',
   'category': 'Arithmetic',
@@ -8962,7 +9000,7 @@ module.exports = {
   'seealso': ['sign']
 };
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 module.exports = {
   'name': 'add',
   'category': 'Operators',
@@ -8983,7 +9021,7 @@ module.exports = {
   ]
 };
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 module.exports = {
   'name': 'cbrt',
   'category': 'Arithmetic',
@@ -9010,7 +9048,7 @@ module.exports = {
   ]
 };
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 module.exports = {
   'name': 'ceil',
   'category': 'Arithmetic',
@@ -9027,7 +9065,7 @@ module.exports = {
   'seealso': ['floor', 'fix', 'round']
 };
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 module.exports = {
   'name': 'cube',
   'category': 'Arithmetic',
@@ -9047,7 +9085,7 @@ module.exports = {
   ]
 };
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 module.exports = {
   'name': 'divide',
   'category': 'Operators',
@@ -9069,7 +9107,7 @@ module.exports = {
   ]
 };
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 module.exports = {
   'name': 'dotDivide',
   'category': 'Operators',
@@ -9090,7 +9128,7 @@ module.exports = {
   ]
 };
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 module.exports = {
   'name': 'dotMultiply',
   'category': 'Operators',
@@ -9111,7 +9149,7 @@ module.exports = {
   ]
 };
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 module.exports = {
   'name': 'dotpow',
   'category': 'Operators',
@@ -9130,7 +9168,7 @@ module.exports = {
   ]
 };
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 module.exports = {
   'name': 'exp',
   'category': 'Arithmetic',
@@ -9151,7 +9189,7 @@ module.exports = {
   ]
 };
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = {
   'name': 'fix',
   'category': 'Arithmetic',
@@ -9169,7 +9207,7 @@ module.exports = {
   'seealso': ['ceil', 'floor', 'round']
 };
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = {
   'name': 'floor',
   'category': 'Arithmetic',
@@ -9186,7 +9224,7 @@ module.exports = {
   'seealso': ['ceil', 'fix', 'round']
 };
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 module.exports = {
   'name': 'gcd',
   'category': 'Arithmetic',
@@ -9203,7 +9241,7 @@ module.exports = {
   'seealso': [ 'lcm', 'xgcd' ]
 };
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 module.exports = {
   'name': 'hypot',
   'category': 'Arithmetic',
@@ -9221,7 +9259,7 @@ module.exports = {
   'seealso': [ 'abs', 'norm' ]
 };
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 module.exports = {
   'name': 'lcm',
   'category': 'Arithmetic',
@@ -9237,7 +9275,7 @@ module.exports = {
   'seealso': [ 'gcd' ]
 };
 
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 module.exports = {
   'name': 'log',
   'category': 'Arithmetic',
@@ -9261,7 +9299,7 @@ module.exports = {
     'log10'
   ]
 };
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 module.exports = {
   'name': 'log10',
   'category': 'Arithmetic',
@@ -9282,7 +9320,7 @@ module.exports = {
   ]
 };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports = {
   'name': 'mod',
   'category': 'Operators',
@@ -9304,7 +9342,7 @@ module.exports = {
   'seealso': ['divide']
 };
 
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = {
   'name': 'multiply',
   'category': 'Operators',
@@ -9325,7 +9363,7 @@ module.exports = {
   ]
 };
 
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 module.exports = {
   'name': 'norm',
   'category': 'Arithmetic',
@@ -9347,7 +9385,7 @@ module.exports = {
   ]
 };
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 module.exports = {
   'name': 'nthRoot',
   'category': 'Arithmetic',
@@ -9369,7 +9407,7 @@ module.exports = {
     'pow'
   ]
 };
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 module.exports = {
   'name': 'pow',
   'category': 'Operators',
@@ -9387,7 +9425,7 @@ module.exports = {
   'seealso': [ 'multiply' ]
 };
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports = {
   'name': 'round',
   'category': 'Arithmetic',
@@ -9408,7 +9446,7 @@ module.exports = {
   'seealso': ['ceil', 'floor', 'fix']
 };
 
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = {
   'name': 'sign',
   'category': 'Arithmetic',
@@ -9427,7 +9465,7 @@ module.exports = {
   ]
 };
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 module.exports = {
   'name': 'sqrt',
   'category': 'Arithmetic',
@@ -9447,7 +9485,7 @@ module.exports = {
   ]
 };
 
-},{}],82:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 module.exports = {
   'name': 'square',
   'category': 'Arithmetic',
@@ -9470,7 +9508,7 @@ module.exports = {
   ]
 };
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 module.exports = {
   'name': 'subtract',
   'category': 'Operators',
@@ -9491,7 +9529,7 @@ module.exports = {
   ]
 };
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 module.exports = {
   'name': 'unaryMinus',
   'category': 'Operators',
@@ -9511,7 +9549,7 @@ module.exports = {
   ]
 };
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 module.exports = {
   'name': 'unaryPlus',
   'category': 'Operators',
@@ -9530,7 +9568,7 @@ module.exports = {
   ]
 };
 
-},{}],86:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 module.exports = {
   'name': 'xgcd',
   'category': 'Arithmetic',
@@ -9546,7 +9584,7 @@ module.exports = {
   'seealso': [ 'gcd', 'lcm' ]
 };
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 module.exports = {
   'name': 'bitAnd',
   'category': 'Bitwise',
@@ -9565,7 +9603,7 @@ module.exports = {
   ]
 };
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 module.exports = {
   'name': 'bitNot',
   'category': 'Bitwise',
@@ -9584,7 +9622,7 @@ module.exports = {
   ]
 };
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 module.exports = {
   'name': 'bitOr',
   'category': 'Bitwise',
@@ -9602,7 +9640,7 @@ module.exports = {
   ]
 };
 
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 module.exports = {
   'name': 'bitXor',
   'category': 'Bitwise',
@@ -9619,7 +9657,7 @@ module.exports = {
   ]
 };
 
-},{}],91:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 module.exports = {
   'name': 'leftShift',
   'category': 'Bitwise',
@@ -9637,7 +9675,7 @@ module.exports = {
   ]
 };
 
-},{}],92:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 module.exports = {
   'name': 'rightArithShift',
   'category': 'Bitwise',
@@ -9656,7 +9694,7 @@ module.exports = {
   ]
 };
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 module.exports = {
   'name': 'rightLogShift',
   'category': 'Bitwise',
@@ -9675,7 +9713,7 @@ module.exports = {
   ]
 };
 
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 module.exports = {
   'name': 'bellNumbers',
   'category': 'Combinatorics',
@@ -9689,7 +9727,7 @@ module.exports = {
   ],
   'seealso': ['stirlingS2']
 };
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 module.exports = {
   'name': 'catalan',
   'category': 'Combinatorics',
@@ -9703,7 +9741,7 @@ module.exports = {
   ],
   'seealso': ['bellNumbers']
 };
-},{}],96:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 module.exports = {
   'name': 'composition',
   'category': 'Combinatorics',
@@ -9716,7 +9754,7 @@ module.exports = {
   ],
   'seealso': ['combinations']
 };
-},{}],97:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 module.exports = {
   'name': 'stirlingS2',
   'category': 'Combinatorics',
@@ -9730,7 +9768,7 @@ module.exports = {
   'seealso': ['bellNumbers']
 };
 
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 module.exports = {
   'name': 'arg',
   'category': 'Complex',
@@ -9752,7 +9790,7 @@ module.exports = {
   ]
 };
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 module.exports = {
   'name': 'conj',
   'category': 'Complex',
@@ -9774,7 +9812,7 @@ module.exports = {
   ]
 };
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 module.exports = {
   'name': 'im',
   'category': 'Complex',
@@ -9796,7 +9834,7 @@ module.exports = {
   ]
 };
 
-},{}],101:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 module.exports = {
   'name': 're',
   'category': 'Complex',
@@ -9818,7 +9856,7 @@ module.exports = {
   ]
 };
 
-},{}],102:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 module.exports = {
   'name': 'eval',
   'category': 'Expression',
@@ -9834,7 +9872,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],103:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 module.exports = {
   'name': 'help',
   'category': 'Expression',
@@ -9850,7 +9888,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],104:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 module.exports = {
   'name': 'distance',
   'category': 'Geometry',
@@ -9866,7 +9904,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],105:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 module.exports = {
   'name': 'intersect',
   'category': 'Geometry',
@@ -9882,7 +9920,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],106:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 module.exports = {
   'name': 'and',
   'category': 'Logical',
@@ -9901,7 +9939,7 @@ module.exports = {
   ]
 };
 
-},{}],107:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 module.exports = {
   'name': 'not',
   'category': 'Logical',
@@ -9921,7 +9959,7 @@ module.exports = {
   ]
 };
 
-},{}],108:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 module.exports = {
   'name': 'or',
   'category': 'Logical',
@@ -9940,7 +9978,7 @@ module.exports = {
   ]
 };
 
-},{}],109:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 module.exports = {
   'name': 'xor',
   'category': 'Logical',
@@ -9960,7 +9998,7 @@ module.exports = {
   ]
 };
 
-},{}],110:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 module.exports = {
   'name': 'concat',
   'category': 'Matrix',
@@ -9981,7 +10019,7 @@ module.exports = {
   ]
 };
 
-},{}],111:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 module.exports = {
   'name': 'cross',
   'category': 'Matrix',
@@ -10000,7 +10038,7 @@ module.exports = {
   ]
 };
 
-},{}],112:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 module.exports = {
   'name': 'det',
   'category': 'Matrix',
@@ -10017,7 +10055,7 @@ module.exports = {
   ]
 };
 
-},{}],113:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 module.exports = {
   'name': 'diag',
   'category': 'Matrix',
@@ -10037,7 +10075,7 @@ module.exports = {
   ]
 };
 
-},{}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 module.exports = {
   'name': 'dot',
   'category': 'Matrix',
@@ -10057,7 +10095,7 @@ module.exports = {
   ]
 };
 
-},{}],115:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports = {
   'name': 'eye',
   'category': 'Matrix',
@@ -10079,7 +10117,7 @@ module.exports = {
   ]
 };
 
-},{}],116:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 module.exports = {
   'name': 'filter',
   'category': 'Matrix',
@@ -10095,7 +10133,7 @@ module.exports = {
   'seealso': ['sort', 'map', 'forEach']
 };
 
-},{}],117:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 module.exports = {
   'name': 'flatten',
   'category': 'Matrix',
@@ -10114,7 +10152,7 @@ module.exports = {
   ]
 };
 
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 module.exports = {
   'name': 'forEach',
   'category': 'Matrix',
@@ -10128,7 +10166,7 @@ module.exports = {
   'seealso': ['map', 'sort', 'filter']
 };
 
-},{}],119:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 module.exports = {
   'name': 'inv',
   'category': 'Matrix',
@@ -10146,7 +10184,7 @@ module.exports = {
   ]
 };
 
-},{}],120:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 module.exports = {
   'name': 'kron',
   'category': 'Matrix',
@@ -10163,7 +10201,7 @@ module.exports = {
   ]
 };
 
-},{}],121:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 module.exports = {
   'name': 'map',
   'category': 'Matrix',
@@ -10177,7 +10215,7 @@ module.exports = {
   'seealso': ['filter', 'forEach']
 };
 
-},{}],122:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 module.exports = {
   'name': 'ones',
   'category': 'Matrix',
@@ -10203,7 +10241,7 @@ module.exports = {
   ]
 };
 
-},{}],123:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 module.exports = {
   'name': 'partitionSelect',
   'category': 'Matrix',
@@ -10219,7 +10257,7 @@ module.exports = {
   'seealso': ['sort']
 };
 
-},{}],124:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 module.exports = {
   'name': 'range',
   'category': 'Type',
@@ -10246,7 +10284,7 @@ module.exports = {
   ]
 };
 
-},{}],125:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 module.exports = {
   'name': 'reshape',
   'category': 'Matrix',
@@ -10264,7 +10302,7 @@ module.exports = {
   ]
 };
 
-},{}],126:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 module.exports = {
   'name': 'resize',
   'category': 'Matrix',
@@ -10285,7 +10323,7 @@ module.exports = {
   ]
 };
 
-},{}],127:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 module.exports = {
   'name': 'size',
   'category': 'Matrix',
@@ -10305,7 +10343,7 @@ module.exports = {
   ]
 };
 
-},{}],128:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 module.exports = {
   'name': 'sort',
   'category': 'Matrix',
@@ -10323,7 +10361,7 @@ module.exports = {
   'seealso': ['map', 'filter', 'forEach']
 };
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 module.exports = {
   'name': 'squeeze',
   'category': 'Matrix',
@@ -10342,7 +10380,7 @@ module.exports = {
   ]
 };
 
-},{}],130:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 module.exports = {
   'name': 'subset',
   'category': 'Matrix',
@@ -10369,7 +10407,7 @@ module.exports = {
   ]
 };
 
-},{}],131:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 module.exports = {
   'name': 'trace',
   'category': 'Matrix',
@@ -10386,7 +10424,7 @@ module.exports = {
   ]
 };
 
-},{}],132:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 module.exports = {
   'name': 'transpose',
   'category': 'Matrix',
@@ -10405,7 +10443,7 @@ module.exports = {
   ]
 };
 
-},{}],133:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 module.exports = {
   'name': 'zeros',
   'category': 'Matrix',
@@ -10430,7 +10468,7 @@ module.exports = {
   ]
 };
 
-},{}],134:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 module.exports = {
   'name': 'combinations',
   'category': 'Probability',
@@ -10444,7 +10482,7 @@ module.exports = {
   'seealso': ['permutations', 'factorial']
 };
 
-},{}],135:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 module.exports = {
   'name': 'factorial',
   'category': 'Probability',
@@ -10460,7 +10498,7 @@ module.exports = {
   'seealso': ['combinations', 'permutations', 'gamma']
 };
 
-},{}],136:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 module.exports = {
   'name': 'gamma',
   'category': 'Probability',
@@ -10477,7 +10515,7 @@ module.exports = {
   'seealso': ['factorial']
 };
 
-},{}],137:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 module.exports = {
   'name': 'kldivergence',
   'category': 'Probability',
@@ -10492,7 +10530,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],138:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 module.exports = {
   'name': 'multinomial',
   'category': 'Probability',
@@ -10505,7 +10543,7 @@ module.exports = {
   ],
   'seealso': ['combinations', 'factorial']
 };
-},{}],139:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 module.exports = {
   'name': 'permutations',
   'category': 'Probability',
@@ -10521,7 +10559,7 @@ module.exports = {
   'seealso': ['combinations', 'factorial']
 };
 
-},{}],140:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 module.exports = {
   'name': 'pickRandom',
   'category': 'Probability',
@@ -10545,7 +10583,7 @@ module.exports = {
   'seealso': ['random', 'randomInt']
 };
 
-},{}],141:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 module.exports = {
   'name': 'random',
   'category': 'Probability',
@@ -10567,7 +10605,7 @@ module.exports = {
   'seealso': ['pickRandom', 'randomInt']
 };
 
-},{}],142:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 module.exports = {
   'name': 'randInt',
   'category': 'Probability',
@@ -10586,7 +10624,7 @@ module.exports = {
   ],
   'seealso': ['pickRandom', 'random']
 };
-},{}],143:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 module.exports = {
   'name': 'compare',
   'category': 'Relational',
@@ -10607,7 +10645,7 @@ module.exports = {
   ]
 };
 
-},{}],144:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 module.exports = {
   'name': 'deepEqual',
   'category': 'Relational',
@@ -10625,7 +10663,7 @@ module.exports = {
   ]
 };
 
-},{}],145:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 module.exports = {
   'name': 'equal',
   'category': 'Relational',
@@ -10648,7 +10686,7 @@ module.exports = {
   ]
 };
 
-},{}],146:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 module.exports = {
   'name': 'larger',
   'category': 'Relational',
@@ -10672,7 +10710,7 @@ module.exports = {
   ]
 };
 
-},{}],147:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 module.exports = {
   'name': 'largerEq',
   'category': 'Relational',
@@ -10694,7 +10732,7 @@ module.exports = {
   ]
 };
 
-},{}],148:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 module.exports = {
   'name': 'smaller',
   'category': 'Relational',
@@ -10717,7 +10755,7 @@ module.exports = {
   ]
 };
 
-},{}],149:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 module.exports = {
   'name': 'smallerEq',
   'category': 'Relational',
@@ -10739,7 +10777,7 @@ module.exports = {
   ]
 };
 
-},{}],150:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 module.exports = {
   'name': 'unequal',
   'category': 'Relational',
@@ -10763,7 +10801,7 @@ module.exports = {
   ]
 };
 
-},{}],151:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 module.exports = {
   'name': 'erf',
   'category': 'Special',
@@ -10779,7 +10817,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],152:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 module.exports = {
   'name': 'mad',
   'category': 'Statistics',
@@ -10801,7 +10839,7 @@ module.exports = {
   ]
 };
 
-},{}],153:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 module.exports = {
   'name': 'max',
   'category': 'Statistics',
@@ -10831,7 +10869,7 @@ module.exports = {
   ]
 };
 
-},{}],154:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 module.exports = {
   'name': 'mean',
   'category': 'Statistics',
@@ -10860,7 +10898,7 @@ module.exports = {
   ]
 };
 
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 module.exports = {
   'name': 'median',
   'category': 'Statistics',
@@ -10885,7 +10923,7 @@ module.exports = {
   ]
 };
 
-},{}],156:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 module.exports = {
   'name': 'min',
   'category': 'Statistics',
@@ -10915,7 +10953,7 @@ module.exports = {
   ]
 };
 
-},{}],157:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 module.exports = {
   'name': 'mode',
   'category': 'Statistics',
@@ -10941,7 +10979,7 @@ module.exports = {
   ]
 };
 
-},{}],158:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 module.exports = {
   'name': 'prod',
   'category': 'Statistics',
@@ -10967,7 +11005,7 @@ module.exports = {
   ]
 };
 
-},{}],159:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 module.exports = {
   'name': 'quantileSeq',
   'category': 'Statistics',
@@ -10994,7 +11032,7 @@ module.exports = {
     'var'
   ]
 };
-},{}],160:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 module.exports = {
   'name': 'std',
   'category': 'Statistics',
@@ -11023,7 +11061,7 @@ module.exports = {
   ]
 };
 
-},{}],161:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 module.exports = {
   'name': 'sum',
   'category': 'Statistics',
@@ -11049,7 +11087,7 @@ module.exports = {
   ]
 };
 
-},{}],162:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 module.exports = {
   'name': 'var',
   'category': 'Statistics',
@@ -11078,7 +11116,7 @@ module.exports = {
   ]
 };
 
-},{}],163:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 module.exports = {
   'name': 'acos',
   'category': 'Trigonometry',
@@ -11097,7 +11135,7 @@ module.exports = {
   ]
 };
 
-},{}],164:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 module.exports = {
   'name': 'acosh',
   'category': 'Trigonometry',
@@ -11114,7 +11152,7 @@ module.exports = {
     'atanh'
   ]
 };
-},{}],165:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 module.exports = {
   'name': 'acot',
   'category': 'Trigonometry',
@@ -11133,7 +11171,7 @@ module.exports = {
   ]
 };
 
-},{}],166:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 module.exports = {
   'name': 'acoth',
   'category': 'Trigonometry',
@@ -11149,7 +11187,7 @@ module.exports = {
     'asech'
   ]
 };
-},{}],167:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 module.exports = {
   'name': 'acsc',
   'category': 'Trigonometry',
@@ -11169,7 +11207,7 @@ module.exports = {
   ]
 };
 
-},{}],168:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 module.exports = {
   'name': 'acsch',
   'category': 'Trigonometry',
@@ -11186,7 +11224,7 @@ module.exports = {
   ]
 };
 
-},{}],169:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 module.exports = {
   'name': 'asec',
   'category': 'Trigonometry',
@@ -11206,7 +11244,7 @@ module.exports = {
   ]
 };
 
-},{}],170:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 module.exports = {
   'name': 'asech',
   'category': 'Trigonometry',
@@ -11223,7 +11261,7 @@ module.exports = {
   ]
 };
 
-},{}],171:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 module.exports = {
   'name': 'asin',
   'category': 'Trigonometry',
@@ -11242,7 +11280,7 @@ module.exports = {
   ]
 };
 
-},{}],172:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 module.exports = {
   'name': 'asinh',
   'category': 'Trigonometry',
@@ -11259,7 +11297,7 @@ module.exports = {
   ]
 };
 
-},{}],173:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 module.exports = {
   'name': 'atan',
   'category': 'Trigonometry',
@@ -11278,7 +11316,7 @@ module.exports = {
   ]
 };
 
-},{}],174:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 module.exports = {
   'name': 'atan2',
   'category': 'Trigonometry',
@@ -11301,7 +11339,7 @@ module.exports = {
   ]
 };
 
-},{}],175:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 module.exports = {
   'name': 'atanh',
   'category': 'Trigonometry',
@@ -11318,7 +11356,7 @@ module.exports = {
   ]
 };
 
-},{}],176:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 module.exports = {
   'name': 'cos',
   'category': 'Trigonometry',
@@ -11340,7 +11378,7 @@ module.exports = {
   ]
 };
 
-},{}],177:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 module.exports = {
   'name': 'cosh',
   'category': 'Trigonometry',
@@ -11358,7 +11396,7 @@ module.exports = {
   ]
 };
 
-},{}],178:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 module.exports = {
   'name': 'cot',
   'category': 'Trigonometry',
@@ -11377,7 +11415,7 @@ module.exports = {
   ]
 };
 
-},{}],179:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 module.exports = {
   'name': 'coth',
   'category': 'Trigonometry',
@@ -11396,7 +11434,7 @@ module.exports = {
   ]
 };
 
-},{}],180:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 module.exports = {
   'name': 'csc',
   'category': 'Trigonometry',
@@ -11415,7 +11453,7 @@ module.exports = {
   ]
 };
 
-},{}],181:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 module.exports = {
   'name': 'csch',
   'category': 'Trigonometry',
@@ -11434,7 +11472,7 @@ module.exports = {
   ]
 };
 
-},{}],182:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 module.exports = {
   'name': 'sec',
   'category': 'Trigonometry',
@@ -11453,7 +11491,7 @@ module.exports = {
   ]
 };
 
-},{}],183:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 module.exports = {
   'name': 'sech',
   'category': 'Trigonometry',
@@ -11472,7 +11510,7 @@ module.exports = {
   ]
 };
 
-},{}],184:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 module.exports = {
   'name': 'sin',
   'category': 'Trigonometry',
@@ -11494,7 +11532,7 @@ module.exports = {
   ]
 };
 
-},{}],185:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 module.exports = {
   'name': 'sinh',
   'category': 'Trigonometry',
@@ -11511,7 +11549,7 @@ module.exports = {
   ]
 };
 
-},{}],186:[function(require,module,exports){
+},{}],187:[function(require,module,exports){
 module.exports = {
   'name': 'tan',
   'category': 'Trigonometry',
@@ -11532,7 +11570,7 @@ module.exports = {
   ]
 };
 
-},{}],187:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 module.exports = {
   'name': 'tanh',
   'category': 'Trigonometry',
@@ -11550,7 +11588,7 @@ module.exports = {
   ]
 };
 
-},{}],188:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 module.exports = {
   'name': 'to',
   'category': 'Units',
@@ -11567,7 +11605,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],189:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 module.exports = {
   'name': 'clone',
   'category': 'Utils',
@@ -11585,7 +11623,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],190:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 module.exports = {
   'name': 'format',
   'category': 'Utils',
@@ -11603,7 +11641,7 @@ module.exports = {
   'seealso': ['print']
 };
 
-},{}],191:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 module.exports = {
   'name': 'isInteger',
   'category': 'Utils',
@@ -11619,7 +11657,7 @@ module.exports = {
   'seealso': ['isNegative', 'isNumeric', 'isPositive', 'isZero']
 };
 
-},{}],192:[function(require,module,exports){
+},{}],193:[function(require,module,exports){
 module.exports = {
   'name': 'isNaN',
   'category': 'Utils',
@@ -11636,7 +11674,7 @@ module.exports = {
   'seealso': ['isNegative', 'isNumeric', 'isPositive', 'isZero']
 };
 
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 module.exports = {
   'name': 'isNegative',
   'category': 'Utils',
@@ -11653,7 +11691,7 @@ module.exports = {
   'seealso': ['isInteger', 'isNumeric', 'isPositive', 'isZero']
 };
 
-},{}],194:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 module.exports = {
   'name': 'isNumeric',
   'category': 'Utils',
@@ -11674,7 +11712,7 @@ module.exports = {
   'seealso': ['isInteger', 'isZero', 'isNegative', 'isPositive', 'isNaN']
 };
 
-},{}],195:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 module.exports = {
   'name': 'isPositive',
   'category': 'Utils',
@@ -11691,7 +11729,7 @@ module.exports = {
   'seealso': ['isInteger', 'isNumeric', 'isNegative', 'isZero']
 };
 
-},{}],196:[function(require,module,exports){
+},{}],197:[function(require,module,exports){
 module.exports = {
   'name': 'isPrime',
   'category': 'Utils',
@@ -11706,7 +11744,7 @@ module.exports = {
   ],
   'seealso': ['isInteger', 'isNumeric', 'isNegative', 'isZero']
 };
-},{}],197:[function(require,module,exports){
+},{}],198:[function(require,module,exports){
 module.exports = {
   'name': 'isZero',
   'category': 'Utils',
@@ -11723,7 +11761,7 @@ module.exports = {
   'seealso': ['isInteger', 'isNumeric', 'isNegative', 'isPositive']
 };
 
-},{}],198:[function(require,module,exports){
+},{}],199:[function(require,module,exports){
 module.exports = {
   'name': 'typeof',
   'category': 'Utils',
@@ -11740,7 +11778,7 @@ module.exports = {
   'seealso': []
 };
 
-},{}],199:[function(require,module,exports){
+},{}],200:[function(require,module,exports){
 function factory (construction, config, load, typed) {
   var docs = {};
 
@@ -12035,7 +12073,7 @@ exports.name = 'docs';
 exports.path = 'expression';
 exports.factory = factory;
 
-},{"./constants/Infinity":18,"./constants/LN10":19,"./constants/LN2":20,"./constants/LOG10E":21,"./constants/LOG2E":22,"./constants/NaN":23,"./constants/SQRT1_2":24,"./constants/SQRT2":25,"./constants/e":26,"./constants/false":27,"./constants/i":28,"./constants/null":29,"./constants/phi":30,"./constants/pi":31,"./constants/tau":32,"./constants/true":33,"./constants/version":34,"./construction/bignumber":35,"./construction/boolean":36,"./construction/complex":37,"./construction/createUnit":38,"./construction/fraction":39,"./construction/index":40,"./construction/matrix":41,"./construction/number":42,"./construction/sparse":43,"./construction/splitUnit":44,"./construction/string":45,"./construction/unit":46,"./core/config":47,"./core/import":48,"./core/typed":49,"./function/algebra/derivative":50,"./function/algebra/lsolve":51,"./function/algebra/lup":52,"./function/algebra/lusolve":53,"./function/algebra/simplify":54,"./function/algebra/slu":55,"./function/algebra/usolve":56,"./function/arithmetic/abs":57,"./function/arithmetic/add":58,"./function/arithmetic/cbrt":59,"./function/arithmetic/ceil":60,"./function/arithmetic/cube":61,"./function/arithmetic/divide":62,"./function/arithmetic/dotDivide":63,"./function/arithmetic/dotMultiply":64,"./function/arithmetic/dotPow":65,"./function/arithmetic/exp":66,"./function/arithmetic/fix":67,"./function/arithmetic/floor":68,"./function/arithmetic/gcd":69,"./function/arithmetic/hypot":70,"./function/arithmetic/lcm":71,"./function/arithmetic/log":72,"./function/arithmetic/log10":73,"./function/arithmetic/mod":74,"./function/arithmetic/multiply":75,"./function/arithmetic/norm":76,"./function/arithmetic/nthRoot":77,"./function/arithmetic/pow":78,"./function/arithmetic/round":79,"./function/arithmetic/sign":80,"./function/arithmetic/sqrt":81,"./function/arithmetic/square":82,"./function/arithmetic/subtract":83,"./function/arithmetic/unaryMinus":84,"./function/arithmetic/unaryPlus":85,"./function/arithmetic/xgcd":86,"./function/bitwise/bitAnd":87,"./function/bitwise/bitNot":88,"./function/bitwise/bitOr":89,"./function/bitwise/bitXor":90,"./function/bitwise/leftShift":91,"./function/bitwise/rightArithShift":92,"./function/bitwise/rightLogShift":93,"./function/combinatorics/bellNumbers":94,"./function/combinatorics/catalan":95,"./function/combinatorics/composition":96,"./function/combinatorics/stirlingS2":97,"./function/complex/arg":98,"./function/complex/conj":99,"./function/complex/im":100,"./function/complex/re":101,"./function/expression/eval":102,"./function/expression/help":103,"./function/geometry/distance":104,"./function/geometry/intersect":105,"./function/logical/and":106,"./function/logical/not":107,"./function/logical/or":108,"./function/logical/xor":109,"./function/matrix/concat":110,"./function/matrix/cross":111,"./function/matrix/det":112,"./function/matrix/diag":113,"./function/matrix/dot":114,"./function/matrix/eye":115,"./function/matrix/filter":116,"./function/matrix/flatten":117,"./function/matrix/forEach":118,"./function/matrix/inv":119,"./function/matrix/kron":120,"./function/matrix/map":121,"./function/matrix/ones":122,"./function/matrix/partitionSelect":123,"./function/matrix/range":124,"./function/matrix/reshape":125,"./function/matrix/resize":126,"./function/matrix/size":127,"./function/matrix/sort":128,"./function/matrix/squeeze":129,"./function/matrix/subset":130,"./function/matrix/trace":131,"./function/matrix/transpose":132,"./function/matrix/zeros":133,"./function/probability/combinations":134,"./function/probability/factorial":135,"./function/probability/gamma":136,"./function/probability/kldivergence":137,"./function/probability/multinomial":138,"./function/probability/permutations":139,"./function/probability/pickRandom":140,"./function/probability/random":141,"./function/probability/randomInt":142,"./function/relational/compare":143,"./function/relational/deepEqual":144,"./function/relational/equal":145,"./function/relational/larger":146,"./function/relational/largerEq":147,"./function/relational/smaller":148,"./function/relational/smallerEq":149,"./function/relational/unequal":150,"./function/special/erf":151,"./function/statistics/mad":152,"./function/statistics/max":153,"./function/statistics/mean":154,"./function/statistics/median":155,"./function/statistics/min":156,"./function/statistics/mode":157,"./function/statistics/prod":158,"./function/statistics/quantileSeq":159,"./function/statistics/std":160,"./function/statistics/sum":161,"./function/statistics/var":162,"./function/trigonometry/acos":163,"./function/trigonometry/acosh":164,"./function/trigonometry/acot":165,"./function/trigonometry/acoth":166,"./function/trigonometry/acsc":167,"./function/trigonometry/acsch":168,"./function/trigonometry/asec":169,"./function/trigonometry/asech":170,"./function/trigonometry/asin":171,"./function/trigonometry/asinh":172,"./function/trigonometry/atan":173,"./function/trigonometry/atan2":174,"./function/trigonometry/atanh":175,"./function/trigonometry/cos":176,"./function/trigonometry/cosh":177,"./function/trigonometry/cot":178,"./function/trigonometry/coth":179,"./function/trigonometry/csc":180,"./function/trigonometry/csch":181,"./function/trigonometry/sec":182,"./function/trigonometry/sech":183,"./function/trigonometry/sin":184,"./function/trigonometry/sinh":185,"./function/trigonometry/tan":186,"./function/trigonometry/tanh":187,"./function/units/to":188,"./function/utils/clone":189,"./function/utils/format":190,"./function/utils/isInteger":191,"./function/utils/isNaN":192,"./function/utils/isNegative":193,"./function/utils/isNumeric":194,"./function/utils/isPositive":195,"./function/utils/isPrime":196,"./function/utils/isZero":197,"./function/utils/typeof":198}],200:[function(require,module,exports){
+},{"./constants/Infinity":19,"./constants/LN10":20,"./constants/LN2":21,"./constants/LOG10E":22,"./constants/LOG2E":23,"./constants/NaN":24,"./constants/SQRT1_2":25,"./constants/SQRT2":26,"./constants/e":27,"./constants/false":28,"./constants/i":29,"./constants/null":30,"./constants/phi":31,"./constants/pi":32,"./constants/tau":33,"./constants/true":34,"./constants/version":35,"./construction/bignumber":36,"./construction/boolean":37,"./construction/complex":38,"./construction/createUnit":39,"./construction/fraction":40,"./construction/index":41,"./construction/matrix":42,"./construction/number":43,"./construction/sparse":44,"./construction/splitUnit":45,"./construction/string":46,"./construction/unit":47,"./core/config":48,"./core/import":49,"./core/typed":50,"./function/algebra/derivative":51,"./function/algebra/lsolve":52,"./function/algebra/lup":53,"./function/algebra/lusolve":54,"./function/algebra/simplify":55,"./function/algebra/slu":56,"./function/algebra/usolve":57,"./function/arithmetic/abs":58,"./function/arithmetic/add":59,"./function/arithmetic/cbrt":60,"./function/arithmetic/ceil":61,"./function/arithmetic/cube":62,"./function/arithmetic/divide":63,"./function/arithmetic/dotDivide":64,"./function/arithmetic/dotMultiply":65,"./function/arithmetic/dotPow":66,"./function/arithmetic/exp":67,"./function/arithmetic/fix":68,"./function/arithmetic/floor":69,"./function/arithmetic/gcd":70,"./function/arithmetic/hypot":71,"./function/arithmetic/lcm":72,"./function/arithmetic/log":73,"./function/arithmetic/log10":74,"./function/arithmetic/mod":75,"./function/arithmetic/multiply":76,"./function/arithmetic/norm":77,"./function/arithmetic/nthRoot":78,"./function/arithmetic/pow":79,"./function/arithmetic/round":80,"./function/arithmetic/sign":81,"./function/arithmetic/sqrt":82,"./function/arithmetic/square":83,"./function/arithmetic/subtract":84,"./function/arithmetic/unaryMinus":85,"./function/arithmetic/unaryPlus":86,"./function/arithmetic/xgcd":87,"./function/bitwise/bitAnd":88,"./function/bitwise/bitNot":89,"./function/bitwise/bitOr":90,"./function/bitwise/bitXor":91,"./function/bitwise/leftShift":92,"./function/bitwise/rightArithShift":93,"./function/bitwise/rightLogShift":94,"./function/combinatorics/bellNumbers":95,"./function/combinatorics/catalan":96,"./function/combinatorics/composition":97,"./function/combinatorics/stirlingS2":98,"./function/complex/arg":99,"./function/complex/conj":100,"./function/complex/im":101,"./function/complex/re":102,"./function/expression/eval":103,"./function/expression/help":104,"./function/geometry/distance":105,"./function/geometry/intersect":106,"./function/logical/and":107,"./function/logical/not":108,"./function/logical/or":109,"./function/logical/xor":110,"./function/matrix/concat":111,"./function/matrix/cross":112,"./function/matrix/det":113,"./function/matrix/diag":114,"./function/matrix/dot":115,"./function/matrix/eye":116,"./function/matrix/filter":117,"./function/matrix/flatten":118,"./function/matrix/forEach":119,"./function/matrix/inv":120,"./function/matrix/kron":121,"./function/matrix/map":122,"./function/matrix/ones":123,"./function/matrix/partitionSelect":124,"./function/matrix/range":125,"./function/matrix/reshape":126,"./function/matrix/resize":127,"./function/matrix/size":128,"./function/matrix/sort":129,"./function/matrix/squeeze":130,"./function/matrix/subset":131,"./function/matrix/trace":132,"./function/matrix/transpose":133,"./function/matrix/zeros":134,"./function/probability/combinations":135,"./function/probability/factorial":136,"./function/probability/gamma":137,"./function/probability/kldivergence":138,"./function/probability/multinomial":139,"./function/probability/permutations":140,"./function/probability/pickRandom":141,"./function/probability/random":142,"./function/probability/randomInt":143,"./function/relational/compare":144,"./function/relational/deepEqual":145,"./function/relational/equal":146,"./function/relational/larger":147,"./function/relational/largerEq":148,"./function/relational/smaller":149,"./function/relational/smallerEq":150,"./function/relational/unequal":151,"./function/special/erf":152,"./function/statistics/mad":153,"./function/statistics/max":154,"./function/statistics/mean":155,"./function/statistics/median":156,"./function/statistics/min":157,"./function/statistics/mode":158,"./function/statistics/prod":159,"./function/statistics/quantileSeq":160,"./function/statistics/std":161,"./function/statistics/sum":162,"./function/statistics/var":163,"./function/trigonometry/acos":164,"./function/trigonometry/acosh":165,"./function/trigonometry/acot":166,"./function/trigonometry/acoth":167,"./function/trigonometry/acsc":168,"./function/trigonometry/acsch":169,"./function/trigonometry/asec":170,"./function/trigonometry/asech":171,"./function/trigonometry/asin":172,"./function/trigonometry/asinh":173,"./function/trigonometry/atan":174,"./function/trigonometry/atan2":175,"./function/trigonometry/atanh":176,"./function/trigonometry/cos":177,"./function/trigonometry/cosh":178,"./function/trigonometry/cot":179,"./function/trigonometry/coth":180,"./function/trigonometry/csc":181,"./function/trigonometry/csch":182,"./function/trigonometry/sec":183,"./function/trigonometry/sech":184,"./function/trigonometry/sin":185,"./function/trigonometry/sinh":186,"./function/trigonometry/tan":187,"./function/trigonometry/tanh":188,"./function/units/to":189,"./function/utils/clone":190,"./function/utils/format":191,"./function/utils/isInteger":192,"./function/utils/isNaN":193,"./function/utils/isNegative":194,"./function/utils/isNumeric":195,"./function/utils/isPositive":196,"./function/utils/isPrime":197,"./function/utils/isZero":198,"./function/utils/typeof":199}],201:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -12093,7 +12131,7 @@ function factory (type, config, load, typed) {
 exports.name = 'compile';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../parse":229}],201:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../parse":230}],202:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -12160,7 +12198,7 @@ function factory (type, config, load, typed) {
 
 exports.name = 'eval';
 exports.factory = factory;
-},{"../../utils/collection/deepMap":501,"../parse":229}],202:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../parse":230}],203:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed, math) {
@@ -12226,7 +12264,7 @@ exports.math = true; // request access to the math namespace as 5th argument of 
 exports.name = 'help';
 exports.factory = factory;
 
-},{"../docs":199}],203:[function(require,module,exports){
+},{"../docs":200}],204:[function(require,module,exports){
 module.exports = [
   require('./compile'),
   require('./eval'),
@@ -12235,7 +12273,7 @@ module.exports = [
   require('./parser')
 ];
 
-},{"./compile":200,"./eval":201,"./help":202,"./parse":204,"./parser":205}],204:[function(require,module,exports){
+},{"./compile":201,"./eval":202,"./help":203,"./parse":205,"./parser":206}],205:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -12289,7 +12327,7 @@ function factory (type, config, load, typed) {
 exports.name = 'parse';
 exports.factory = factory;
 
-},{"../parse":229}],205:[function(require,module,exports){
+},{"../parse":230}],206:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed, math) {
@@ -12349,7 +12387,7 @@ exports.name = 'parser';
 exports.factory = factory;
 exports.math = true; // requires the math namespace as 5th argument
 
-},{"../Parser":17}],206:[function(require,module,exports){
+},{"../Parser":18}],207:[function(require,module,exports){
 module.exports = [
   require('./docs'),
   require('./function'),
@@ -12361,7 +12399,7 @@ module.exports = [
   require('./Parser')
 ];
 
-},{"./Help":16,"./Parser":17,"./docs":199,"./function":203,"./node":224,"./parse":229,"./transform":234}],207:[function(require,module,exports){
+},{"./Help":17,"./Parser":18,"./docs":200,"./function":204,"./node":225,"./parse":230,"./transform":235}],208:[function(require,module,exports){
 'use strict';
 
 // Reserved keywords not allowed to use in the parser
@@ -12369,7 +12407,7 @@ module.exports = {
   end: true
 };
 
-},{}],208:[function(require,module,exports){
+},{}],209:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -12537,7 +12575,7 @@ exports.name = 'AccessorNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"./Node":217,"./utils/access":225,"./utils/customs":227}],209:[function(require,module,exports){
+},{"./Node":218,"./utils/access":226,"./utils/customs":228}],210:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -12676,7 +12714,7 @@ exports.name = 'ArrayNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"./Node":217}],210:[function(require,module,exports){
+},{"./Node":218}],211:[function(require,module,exports){
 'use strict';
 
 var latex = require('../../utils/latex');
@@ -12945,7 +12983,7 @@ exports.name = 'AssignmentNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/latex":508,"../keywords":207,"../operators":228,"./ArrayNode":209,"./Node":217,"./utils/access":225,"./utils/assign":226,"./utils/customs":227}],211:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/latex":509,"../keywords":208,"../operators":229,"./ArrayNode":210,"./Node":218,"./utils/access":226,"./utils/assign":227,"./utils/customs":228}],212:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -13093,7 +13131,7 @@ exports.name = 'BlockNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../type/resultset/ResultSet":478,"./Node":217}],212:[function(require,module,exports){
+},{"../../type/resultset/ResultSet":479,"./Node":218}],213:[function(require,module,exports){
 'use strict';
 
 var latex = require('../../utils/latex');
@@ -13275,7 +13313,7 @@ exports.name = 'ConditionalNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../utils/latex":508,"../operators":228,"./Node":217}],213:[function(require,module,exports){
+},{"../../utils/latex":509,"../operators":229,"./Node":218}],214:[function(require,module,exports){
 'use strict';
 
 var getType = require('../../utils/types').type;
@@ -13476,7 +13514,7 @@ exports.name = 'ConstantNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../utils/types":512,"./Node":217}],214:[function(require,module,exports){
+},{"../../utils/types":513,"./Node":218}],215:[function(require,module,exports){
 'use strict';
 
 var keywords = require('../keywords');
@@ -13641,7 +13679,7 @@ exports.name = 'FunctionAssignmentNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../utils/latex":508,"../keywords":207,"../operators":228,"./Node":217,"./utils/customs":227}],215:[function(require,module,exports){
+},{"../../utils/latex":509,"../keywords":208,"../operators":229,"./Node":218,"./utils/customs":228}],216:[function(require,module,exports){
 'use strict';
 
 var latex = require('../../utils/latex');
@@ -14066,7 +14104,7 @@ exports.path = 'expression.node';
 exports.math = true; // request access to the math namespace as 5th argument of the factory function
 exports.factory = factory;
 
-},{"../../utils/latex":508,"../../utils/object":510,"./Node":217,"./SymbolNode":222,"./utils/customs":227}],216:[function(require,module,exports){
+},{"../../utils/latex":509,"../../utils/object":511,"./Node":218,"./SymbolNode":223,"./utils/customs":228}],217:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -14298,7 +14336,7 @@ exports.name = 'IndexNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../type/matrix/Range":456,"./Node":217,"./RangeNode":221,"./SymbolNode":222}],217:[function(require,module,exports){
+},{"../../type/matrix/Range":457,"./Node":218,"./RangeNode":222,"./SymbolNode":223}],218:[function(require,module,exports){
 'use strict';
 
 var keywords = require('../keywords');
@@ -14682,7 +14720,7 @@ exports.path = 'expression.node';
 exports.math = true; // request access to the math namespace as 5th argument of the factory function
 exports.factory = factory;
 
-},{"../../utils/object":510,"../keywords":207}],218:[function(require,module,exports){
+},{"../../utils/object":511,"../keywords":208}],219:[function(require,module,exports){
 'use strict';
 
 var string = require('../../utils/string');
@@ -14821,7 +14859,7 @@ exports.name = 'ObjectNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../../utils/string":511,"./Node":217}],219:[function(require,module,exports){
+},{"../../utils/string":512,"./Node":218}],220:[function(require,module,exports){
 'use strict';
 
 var latex = require('../../utils/latex');
@@ -15287,7 +15325,7 @@ exports.path = 'expression.node';
 exports.math = true; // request access to the math namespace as 5th argument of the factory function
 exports.factory = factory;
 
-},{"../../utils/latex":508,"../operators":228,"./ConstantNode":213,"./FunctionNode":215,"./Node":217,"./SymbolNode":222}],220:[function(require,module,exports){
+},{"../../utils/latex":509,"../operators":229,"./ConstantNode":214,"./FunctionNode":216,"./Node":218,"./SymbolNode":223}],221:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -15404,7 +15442,7 @@ exports.name = 'ParenthesisNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"./Node":217}],221:[function(require,module,exports){
+},{"./Node":218}],222:[function(require,module,exports){
 'use strict';
 
 var operators = require('../operators');
@@ -15618,7 +15656,7 @@ exports.name = 'RangeNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{"../operators":228,"./Node":217}],222:[function(require,module,exports){
+},{"../operators":229,"./Node":218}],223:[function(require,module,exports){
 'use strict';
 
 var latex = require('../../utils/latex');
@@ -15760,7 +15798,7 @@ exports.path = 'expression.node';
 exports.math = true; // request access to the math namespace as 5th argument of the factory function
 exports.factory = factory;
 
-},{"../../type/unit/Unit":481,"../../utils/latex":508,"./Node":217,"./utils/customs":227}],223:[function(require,module,exports){
+},{"../../type/unit/Unit":482,"../../utils/latex":509,"./Node":218,"./utils/customs":228}],224:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -15779,7 +15817,7 @@ exports.name = 'UpdateNode';
 exports.path = 'expression.node';
 exports.factory = factory;
 
-},{}],224:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 module.exports = [
   require('./AccessorNode'),
   require('./ArrayNode'),
@@ -15799,7 +15837,7 @@ module.exports = [
   require('./UpdateNode')
 ];
 
-},{"./AccessorNode":208,"./ArrayNode":209,"./AssignmentNode":210,"./BlockNode":211,"./ConditionalNode":212,"./ConstantNode":213,"./FunctionAssignmentNode":214,"./FunctionNode":215,"./IndexNode":216,"./Node":217,"./ObjectNode":218,"./OperatorNode":219,"./ParenthesisNode":220,"./RangeNode":221,"./SymbolNode":222,"./UpdateNode":223}],225:[function(require,module,exports){
+},{"./AccessorNode":209,"./ArrayNode":210,"./AssignmentNode":211,"./BlockNode":212,"./ConditionalNode":213,"./ConstantNode":214,"./FunctionAssignmentNode":215,"./FunctionNode":216,"./IndexNode":217,"./Node":218,"./ObjectNode":219,"./OperatorNode":220,"./ParenthesisNode":221,"./RangeNode":222,"./SymbolNode":223,"./UpdateNode":224}],226:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('../../transform/error.transform').transform;
@@ -15851,7 +15889,7 @@ function factory (type, config, load, typed) {
 
 exports.factory = factory;
 
-},{"../../../function/matrix/subset":353,"../../../type/matrix/function/matrix":460,"../../transform/error.transform":231,"./customs":227}],226:[function(require,module,exports){
+},{"../../../function/matrix/subset":354,"../../../type/matrix/function/matrix":461,"../../transform/error.transform":232,"./customs":228}],227:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('../../transform/error.transform').transform;
@@ -15906,7 +15944,7 @@ function factory (type, config, load, typed) {
 
 exports.factory = factory;
 
-},{"../../../function/matrix/subset":353,"../../../type/matrix/function/matrix":460,"../../transform/error.transform":231,"./customs":227}],227:[function(require,module,exports){
+},{"../../../function/matrix/subset":354,"../../../type/matrix/function/matrix":461,"../../transform/error.transform":232,"./customs":228}],228:[function(require,module,exports){
 'use strict';
 
 // TODO: remove factory stuff, not needed
@@ -16286,7 +16324,7 @@ var safeMethods = {
 exports.factory = factory;
 exports.math = true;
 
-},{}],228:[function(require,module,exports){
+},{}],229:[function(require,module,exports){
 'use strict'
 
 //list of identifiers of nodes in order of their precedence
@@ -16604,7 +16642,7 @@ module.exports.getPrecedence = getPrecedence;
 module.exports.getAssociativity = getAssociativity;
 module.exports.isAssociativeWith = isAssociativeWith;
 
-},{}],229:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 'use strict';
 
 var ArgumentsError = require('../error/ArgumentsError');
@@ -18155,7 +18193,7 @@ exports.name = 'parse';
 exports.path = 'expression';
 exports.factory = factory;
 
-},{"../error/ArgumentsError":12,"../utils/collection/deepMap":501,"./node/AccessorNode":208,"./node/ArrayNode":209,"./node/AssignmentNode":210,"./node/BlockNode":211,"./node/ConditionalNode":212,"./node/ConstantNode":213,"./node/FunctionAssignmentNode":214,"./node/FunctionNode":215,"./node/IndexNode":216,"./node/ObjectNode":218,"./node/OperatorNode":219,"./node/ParenthesisNode":220,"./node/RangeNode":221,"./node/SymbolNode":222}],230:[function(require,module,exports){
+},{"../error/ArgumentsError":13,"../utils/collection/deepMap":502,"./node/AccessorNode":209,"./node/ArrayNode":210,"./node/AssignmentNode":211,"./node/BlockNode":212,"./node/ConditionalNode":213,"./node/ConstantNode":214,"./node/FunctionAssignmentNode":215,"./node/FunctionNode":216,"./node/IndexNode":217,"./node/ObjectNode":219,"./node/OperatorNode":220,"./node/ParenthesisNode":221,"./node/RangeNode":222,"./node/SymbolNode":223}],231:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('./error.transform').transform;
@@ -18197,7 +18235,7 @@ exports.name = 'concat';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/concat":332,"./error.transform":231}],231:[function(require,module,exports){
+},{"../../function/matrix/concat":333,"./error.transform":232}],232:[function(require,module,exports){
 var IndexError = require('../../error/IndexError');
 
 /**
@@ -18216,7 +18254,7 @@ exports.transform = function (err) {
   return err;
 };
 
-},{"../../error/IndexError":14}],232:[function(require,module,exports){
+},{"../../error/IndexError":15}],233:[function(require,module,exports){
 'use strict';
 
 /**
@@ -18282,7 +18320,7 @@ exports.name = 'filter';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/filter":338,"../node/SymbolNode":222}],233:[function(require,module,exports){
+},{"../../function/matrix/filter":339,"../node/SymbolNode":223}],234:[function(require,module,exports){
 'use strict';
 
 var maxArgumentCount = require('../../utils/function').maxArgumentCount;
@@ -18330,7 +18368,7 @@ exports.name = 'forEach';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/forEach":340,"../../utils/function":506}],234:[function(require,module,exports){
+},{"../../function/matrix/forEach":341,"../../utils/function":507}],235:[function(require,module,exports){
 module.exports = [
   require('./concat.transform'),
   require('./filter.transform'),
@@ -18344,7 +18382,7 @@ module.exports = [
   require('./subset.transform')
 ];
 
-},{"./concat.transform":230,"./filter.transform":232,"./forEach.transform":233,"./index.transform":235,"./map.transform":236,"./max.transform":237,"./mean.transform":238,"./min.transform":239,"./range.transform":240,"./subset.transform":241}],235:[function(require,module,exports){
+},{"./concat.transform":231,"./filter.transform":233,"./forEach.transform":234,"./index.transform":236,"./map.transform":237,"./max.transform":238,"./mean.transform":239,"./min.transform":240,"./range.transform":241,"./subset.transform":242}],236:[function(require,module,exports){
 'use strict';
 
 /**
@@ -18397,7 +18435,7 @@ exports.name = 'index';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{}],236:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 'use strict';
 
 var maxArgumentCount = require('../../utils/function').maxArgumentCount;
@@ -18463,7 +18501,7 @@ exports.name = 'map';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/map":344,"../../type/matrix/function/matrix":460,"../../utils/function":506}],237:[function(require,module,exports){
+},{"../../function/matrix/map":345,"../../type/matrix/function/matrix":461,"../../utils/function":507}],238:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('./error.transform').transform;
@@ -18506,7 +18544,7 @@ exports.name = 'max';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/statistics/max":383,"../../utils/collection/isCollection":502,"./error.transform":231}],238:[function(require,module,exports){
+},{"../../function/statistics/max":384,"../../utils/collection/isCollection":503,"./error.transform":232}],239:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('./error.transform').transform;
@@ -18549,7 +18587,7 @@ exports.name = 'mean';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/statistics/mean":384,"../../utils/collection/isCollection":502,"./error.transform":231}],239:[function(require,module,exports){
+},{"../../function/statistics/mean":385,"../../utils/collection/isCollection":503,"./error.transform":232}],240:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('./error.transform').transform;
@@ -18592,7 +18630,7 @@ exports.name = 'min';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/statistics/min":386,"../../utils/collection/isCollection":502,"./error.transform":231}],240:[function(require,module,exports){
+},{"../../function/statistics/min":387,"../../utils/collection/isCollection":503,"./error.transform":232}],241:[function(require,module,exports){
 'use strict';
 
 /**
@@ -18622,7 +18660,7 @@ exports.name = 'range';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/range":347}],241:[function(require,module,exports){
+},{"../../function/matrix/range":348}],242:[function(require,module,exports){
 'use strict';
 
 var errorTransform = require('./error.transform').transform;
@@ -18652,7 +18690,7 @@ exports.name = 'subset';
 exports.path = 'expression.transform';
 exports.factory = factory;
 
-},{"../../function/matrix/subset":353,"./error.transform":231}],242:[function(require,module,exports){
+},{"../../function/matrix/subset":354,"./error.transform":232}],243:[function(require,module,exports){
 'use strict';
 
 var util = require('../../../utils/index');
@@ -19041,7 +19079,7 @@ function factory (type, config, load, typed) {
 exports.name = 'lup';
 exports.factory = factory;
 
-},{"../../../type/matrix/function/matrix":460,"../../../utils/index":507,"../../arithmetic/abs":271,"../../arithmetic/addScalar":273,"../../arithmetic/divideScalar":278,"../../arithmetic/multiplyScalar":293,"../../arithmetic/subtract":301,"../../arithmetic/unaryMinus":302,"../../relational/equalScalar":372,"../../relational/larger":374}],243:[function(require,module,exports){
+},{"../../../type/matrix/function/matrix":461,"../../../utils/index":508,"../../arithmetic/abs":272,"../../arithmetic/addScalar":274,"../../arithmetic/divideScalar":279,"../../arithmetic/multiplyScalar":294,"../../arithmetic/subtract":302,"../../arithmetic/unaryMinus":303,"../../relational/equalScalar":373,"../../relational/larger":375}],244:[function(require,module,exports){
 'use strict';
 
 var util = require('../../../utils/index');
@@ -19115,7 +19153,7 @@ function factory (type, config, load, typed) {
 exports.name = 'slu';
 exports.factory = factory;
 
-},{"../../../utils/index":507,"../../algebra/sparse/cs_lu":261,"../../algebra/sparse/cs_sqr":268}],244:[function(require,module,exports){
+},{"../../../utils/index":508,"../../algebra/sparse/cs_lu":262,"../../algebra/sparse/cs_sqr":269}],245:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -19831,7 +19869,7 @@ function factory (type, config, load, typed) {
 exports.name = 'derivative';
 exports.factory = factory;
 
-},{"../../expression/node/ConstantNode":213,"../../expression/node/FunctionNode":215,"../../expression/node/OperatorNode":219,"../../expression/node/ParenthesisNode":220,"../../expression/node/SymbolNode":222,"../../expression/parse":229,"./simplify":246}],245:[function(require,module,exports){
+},{"../../expression/node/ConstantNode":214,"../../expression/node/FunctionNode":216,"../../expression/node/OperatorNode":220,"../../expression/node/ParenthesisNode":221,"../../expression/node/SymbolNode":223,"../../expression/parse":230,"./simplify":247}],246:[function(require,module,exports){
 module.exports = [
   require('./derivative'),
 
@@ -19848,7 +19886,7 @@ module.exports = [
   require('./solver/usolve')
 ];
 
-},{"./decomposition/lup":242,"./decomposition/slu":243,"./derivative":244,"./simplify":246,"./solver/lsolve":249,"./solver/lusolve":250,"./solver/usolve":251}],246:[function(require,module,exports){
+},{"./decomposition/lup":243,"./decomposition/slu":244,"./derivative":245,"./simplify":247,"./solver/lsolve":250,"./solver/lusolve":251,"./solver/usolve":252}],247:[function(require,module,exports){
 'use strict';
 
 
@@ -20460,7 +20498,7 @@ function factory (type, config, load, typed) {
 exports.name = 'simplify';
 exports.factory = factory;
 
-},{"../../expression/node/ConstantNode":213,"../../expression/node/FunctionNode":215,"../../expression/node/Node":217,"../../expression/node/OperatorNode":219,"../../expression/node/ParenthesisNode":220,"../../expression/node/SymbolNode":222,"../../expression/parse":229,"./simplify/simplifyConstant":247,"./simplify/util":248}],247:[function(require,module,exports){
+},{"../../expression/node/ConstantNode":214,"../../expression/node/FunctionNode":216,"../../expression/node/Node":218,"../../expression/node/OperatorNode":220,"../../expression/node/ParenthesisNode":221,"../../expression/node/SymbolNode":223,"../../expression/parse":230,"./simplify/simplifyConstant":248,"./simplify/util":249}],248:[function(require,module,exports){
 'use strict';
 
 var digits = require('./../../../utils/number').digits;
@@ -20679,7 +20717,7 @@ exports.name = 'simplifyConstant';
 exports.path = 'algebra.simplify';
 exports.factory = factory;
 
-},{"./../../../utils/number":509,"./util":248}],248:[function(require,module,exports){
+},{"./../../../utils/number":510,"./util":249}],249:[function(require,module,exports){
 'use strict';
 
 function factory(type, config, load, typed, math) {
@@ -20838,7 +20876,7 @@ function factory(type, config, load, typed, math) {
 
 exports.factory = factory;
 exports.math = true;
-},{}],249:[function(require,module,exports){
+},{}],250:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -21027,7 +21065,7 @@ function factory (type, config, load, typed) {
 exports.name = 'lsolve';
 exports.factory = factory;
 
-},{"../../../type/matrix/function/matrix":460,"../../arithmetic/divideScalar":278,"../../arithmetic/multiplyScalar":293,"../../arithmetic/subtract":301,"../../relational/equalScalar":372,"./utils/solveValidation":252}],250:[function(require,module,exports){
+},{"../../../type/matrix/function/matrix":461,"../../arithmetic/divideScalar":279,"../../arithmetic/multiplyScalar":294,"../../arithmetic/subtract":302,"../../relational/equalScalar":373,"./utils/solveValidation":253}],251:[function(require,module,exports){
 'use strict';
 
 var isArray = Array.isArray;
@@ -21154,7 +21192,7 @@ function factory (type, config, load, typed) {
 exports.name = 'lusolve';
 exports.factory = factory;
 
-},{"../../../type/matrix/function/matrix":460,"../decomposition/lup":242,"../decomposition/slu":243,"../sparse/cs_ipvec":259,"./lsolve":249,"./usolve":251,"./utils/solveValidation":252}],251:[function(require,module,exports){
+},{"../../../type/matrix/function/matrix":461,"../decomposition/lup":243,"../decomposition/slu":244,"../sparse/cs_ipvec":260,"./lsolve":250,"./usolve":252,"./utils/solveValidation":253}],252:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -21344,7 +21382,7 @@ function factory (type, config, load, typed) {
 exports.name = 'usolve';
 exports.factory = factory;
 
-},{"../../../type/matrix/function/matrix":460,"../../arithmetic/divideScalar":278,"../../arithmetic/multiplyScalar":293,"../../arithmetic/subtract":301,"../../relational/equalScalar":372,"./utils/solveValidation":252}],252:[function(require,module,exports){
+},{"../../../type/matrix/function/matrix":461,"../../arithmetic/divideScalar":279,"../../arithmetic/multiplyScalar":294,"../../arithmetic/subtract":302,"../../relational/equalScalar":373,"./utils/solveValidation":253}],253:[function(require,module,exports){
 'use strict';
 
 var util = require('../../../../utils/index');
@@ -21507,7 +21545,7 @@ function factory (type) {
 }
 
 exports.factory = factory;
-},{"../../../../utils/index":507}],253:[function(require,module,exports){
+},{"../../../../utils/index":508}],254:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22082,7 +22120,7 @@ exports.name = 'cs_amd';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"../../arithmetic/add":272,"../../arithmetic/multiply":292,"../../matrix/transpose":355,"./cs_fkeep":257,"./cs_flip":258,"./cs_tdfs":269}],254:[function(require,module,exports){
+},{"../../arithmetic/add":273,"../../arithmetic/multiply":293,"../../matrix/transpose":356,"./cs_fkeep":258,"./cs_flip":259,"./cs_tdfs":270}],255:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22205,7 +22243,7 @@ exports.name = 'cs_counts';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"../../matrix/transpose":355,"./cs_leaf":260}],255:[function(require,module,exports){
+},{"../../matrix/transpose":356,"./cs_leaf":261}],256:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22292,7 +22330,7 @@ exports.name = 'cs_dfs';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_mark":262,"./cs_marked":263,"./cs_unflip":270}],256:[function(require,module,exports){
+},{"./cs_mark":263,"./cs_marked":264,"./cs_unflip":271}],257:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22370,7 +22408,7 @@ exports.name = 'cs_etree';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],257:[function(require,module,exports){
+},{}],258:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22437,7 +22475,7 @@ exports.name = 'cs_fkeep';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],258:[function(require,module,exports){
+},{}],259:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22461,7 +22499,7 @@ exports.name = 'cs_flip';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],259:[function(require,module,exports){
+},{}],260:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22504,7 +22542,7 @@ exports.name = 'cs_ipvec';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],260:[function(require,module,exports){
+},{}],261:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22572,7 +22610,7 @@ exports.name = 'cs_leaf';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],261:[function(require,module,exports){
+},{}],262:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22752,7 +22790,7 @@ exports.name = 'cs_lu';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"../../arithmetic/abs":271,"../../arithmetic/divideScalar":278,"../../arithmetic/multiply":292,"../../relational/larger":374,"../../relational/largerEq":375,"./cs_spsolve":267}],262:[function(require,module,exports){
+},{"../../arithmetic/abs":272,"../../arithmetic/divideScalar":279,"../../arithmetic/multiply":293,"../../relational/larger":375,"../../relational/largerEq":376,"./cs_spsolve":268}],263:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22779,7 +22817,7 @@ exports.name = 'cs_mark';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_flip":258}],263:[function(require,module,exports){
+},{"./cs_flip":259}],264:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -22804,7 +22842,7 @@ exports.name = 'cs_marked';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],264:[function(require,module,exports){
+},{}],265:[function(require,module,exports){
 'use strict';
 
 function factory (type) {
@@ -22877,7 +22915,7 @@ exports.name = 'cs_permute';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],265:[function(require,module,exports){
+},{}],266:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -22938,7 +22976,7 @@ exports.name = 'cs_post';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_tdfs":269}],266:[function(require,module,exports){
+},{"./cs_tdfs":270}],267:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -23001,7 +23039,7 @@ exports.name = 'cs_reach';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_dfs":255,"./cs_mark":262,"./cs_marked":263}],267:[function(require,module,exports){
+},{"./cs_dfs":256,"./cs_mark":263,"./cs_marked":264}],268:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -23089,7 +23127,7 @@ exports.name = 'cs_spsolve';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"../../arithmetic/divideScalar":278,"../../arithmetic/multiply":292,"../../arithmetic/subtract":301,"./cs_reach":266}],268:[function(require,module,exports){
+},{"../../arithmetic/divideScalar":279,"../../arithmetic/multiply":293,"../../arithmetic/subtract":302,"./cs_reach":267}],269:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -23254,7 +23292,7 @@ exports.name = 'cs_sqr';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_amd":253,"./cs_counts":254,"./cs_etree":256,"./cs_permute":264,"./cs_post":265}],269:[function(require,module,exports){
+},{"./cs_amd":254,"./cs_counts":255,"./cs_etree":257,"./cs_permute":265,"./cs_post":266}],270:[function(require,module,exports){
 'use strict';
 
 function factory () {
@@ -23308,7 +23346,7 @@ exports.name = 'cs_tdfs';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{}],270:[function(require,module,exports){
+},{}],271:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -23334,7 +23372,7 @@ exports.name = 'cs_unflip';
 exports.path = 'sparse';
 exports.factory = factory;
 
-},{"./cs_flip":258}],271:[function(require,module,exports){
+},{"./cs_flip":259}],272:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -23397,7 +23435,7 @@ function factory (type, config, load, typed) {
 exports.name = 'abs';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],272:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],273:[function(require,module,exports){
 'use strict';
 
 var extend = require('../../utils/object').extend;
@@ -23563,7 +23601,7 @@ function factory (type, config, load, typed) {
 exports.name = 'add';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm04":466,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex.js":508,"../../utils/object":510,"./addScalar":273}],273:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm04":467,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex.js":509,"../../utils/object":511,"./addScalar":274}],274:[function(require,module,exports){
 'use strict';
 
 function factory(type, config, load, typed) {
@@ -23616,7 +23654,7 @@ function factory(type, config, load, typed) {
 
 exports.factory = factory;
 
-},{}],274:[function(require,module,exports){
+},{}],275:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -23803,7 +23841,7 @@ var _cbrtNumber = Math.cbrt || function (x) {
 exports.name = 'cbrt';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/collection/deepMap":501,"../utils/isNegative":428,"./unaryMinus":302}],275:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/collection/deepMap":502,"../utils/isNegative":429,"./unaryMinus":303}],276:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -23866,7 +23904,7 @@ function factory (type, config, load, typed) {
 exports.name = 'ceil';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],276:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],277:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -23932,7 +23970,7 @@ function factory (type, config, load, typed) {
 exports.name = 'cube';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],277:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],278:[function(require,module,exports){
 'use strict';
 
 var extend = require('../../utils/object').extend;
@@ -24023,7 +24061,7 @@ function factory (type, config, load, typed) {
 exports.name = 'divide';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm14":476,"../../utils/object":510,"../matrix/inv":342,"./divideScalar":278,"./multiply":292}],278:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm14":477,"../../utils/object":511,"../matrix/inv":343,"./divideScalar":279,"./multiply":293}],279:[function(require,module,exports){
 'use strict';
 
 function factory(type, config, load, typed) {
@@ -24084,7 +24122,7 @@ function factory(type, config, load, typed) {
 
 exports.factory = factory;
 
-},{"./multiplyScalar":293}],279:[function(require,module,exports){
+},{"./multiplyScalar":294}],280:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -24231,7 +24269,7 @@ function factory (type, config, load, typed) {
 exports.name = 'dotDivide';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"./divideScalar":278}],280:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"./divideScalar":279}],281:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -24376,7 +24414,7 @@ function factory (type, config, load, typed) {
 exports.name = 'dotMultiply';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm09":471,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"./multiplyScalar":293}],281:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm09":472,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"./multiplyScalar":294}],282:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -24519,7 +24557,7 @@ function factory (type, config, load, typed) {
 exports.name = 'dotPow';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"./pow":296}],282:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"./pow":297}],283:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -24578,7 +24616,7 @@ function factory (type, config, load, typed) {
 exports.name = 'exp';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],283:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],284:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -24645,7 +24683,7 @@ function factory (type, config, load, typed) {
 exports.name = 'fix';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],284:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],285:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -24707,7 +24745,7 @@ function factory (type, config, load, typed) {
 exports.name = 'floor';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],285:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],286:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -24908,7 +24946,7 @@ function _gcd(a, b) {
 exports.name = 'gcd';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm04":466,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/number":509}],286:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm04":467,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/number":510}],287:[function(require,module,exports){
 'use strict';
 
 var flatten = require('../../utils/array').flatten;
@@ -24994,7 +25032,7 @@ function factory (type, config, load, typed) {
 exports.name = 'hypot';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../relational/smaller":376,"../utils/isPositive":430,"./abs":271,"./addScalar":273,"./divideScalar":278,"./multiplyScalar":293,"./sqrt":299}],287:[function(require,module,exports){
+},{"../../utils/array":488,"../relational/smaller":377,"../utils/isPositive":431,"./abs":272,"./addScalar":274,"./divideScalar":279,"./multiplyScalar":294,"./sqrt":300}],288:[function(require,module,exports){
 module.exports = [
   require('./abs'),
   require('./add'),
@@ -25029,7 +25067,7 @@ module.exports = [
   require('./xgcd')
 ];
 
-},{"./abs":271,"./add":272,"./addScalar":273,"./cbrt":274,"./ceil":275,"./cube":276,"./divide":277,"./dotDivide":279,"./dotMultiply":280,"./dotPow":281,"./exp":282,"./fix":283,"./floor":284,"./gcd":285,"./hypot":286,"./lcm":288,"./log":289,"./log10":290,"./mod":291,"./multiply":292,"./norm":294,"./nthRoot":295,"./pow":296,"./round":297,"./sign":298,"./sqrt":299,"./square":300,"./subtract":301,"./unaryMinus":302,"./unaryPlus":303,"./xgcd":304}],288:[function(require,module,exports){
+},{"./abs":272,"./add":273,"./addScalar":274,"./cbrt":275,"./ceil":276,"./cube":277,"./divide":278,"./dotDivide":280,"./dotMultiply":281,"./dotPow":282,"./exp":283,"./fix":284,"./floor":285,"./gcd":286,"./hypot":287,"./lcm":289,"./log":290,"./log10":291,"./mod":292,"./multiply":293,"./norm":295,"./nthRoot":296,"./pow":297,"./round":298,"./sign":299,"./sqrt":300,"./square":301,"./subtract":302,"./unaryMinus":303,"./unaryPlus":304,"./xgcd":305}],289:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -25245,7 +25283,7 @@ function _lcm (a, b) {
 exports.name = 'lcm';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm06":468,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/number":509}],289:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm06":469,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/number":510}],290:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -25333,7 +25371,7 @@ function factory (type, config, load, typed) {
 exports.name = 'log';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"./divideScalar":278}],290:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"./divideScalar":279}],291:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -25413,7 +25451,7 @@ exports.name = 'log10';
 exports.factory = factory;
 
 
-},{"../../utils/collection/deepMap":501}],291:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],292:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -25599,7 +25637,7 @@ function factory (type, config, load, typed) {
 exports.name = 'mod';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm05":467,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508}],292:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm05":468,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509}],293:[function(require,module,exports){
 'use strict';
 
 var extend = require('../../utils/object').extend;
@@ -26571,7 +26609,7 @@ function factory (type, config, load, typed) {
 exports.name = 'multiply';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm14":476,"../../utils/array":487,"../../utils/latex":508,"../../utils/object":510,"../relational/equalScalar":372,"./addScalar":273,"./multiplyScalar":293}],293:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm14":477,"../../utils/array":488,"../../utils/latex":509,"../../utils/object":511,"../relational/equalScalar":373,"./addScalar":274,"./multiplyScalar":294}],294:[function(require,module,exports){
 'use strict';
 
 function factory(type, config, load, typed) {
@@ -26630,7 +26668,7 @@ function factory(type, config, load, typed) {
 
 exports.factory = factory;
 
-},{}],294:[function(require,module,exports){
+},{}],295:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -26847,7 +26885,7 @@ function factory (type, config, load, typed) {
 exports.name = 'norm';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../arithmetic/abs":271,"../arithmetic/add":272,"../arithmetic/multiply":292,"../arithmetic/pow":296,"../arithmetic/sqrt":299,"../matrix/trace":354,"../matrix/transpose":355,"../relational/equalScalar":372,"../relational/larger":374,"../relational/smaller":376}],295:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../arithmetic/abs":272,"../arithmetic/add":273,"../arithmetic/multiply":293,"../arithmetic/pow":297,"../arithmetic/sqrt":300,"../matrix/trace":355,"../matrix/transpose":356,"../relational/equalScalar":373,"../relational/larger":375,"../relational/smaller":377}],296:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -27148,7 +27186,7 @@ function _nthComplexRoot(a, root) {
 exports.name = 'nthRoot';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm06":468,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476}],296:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm06":469,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477}],297:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -27334,7 +27372,7 @@ function factory (type, config, load, typed) {
 exports.name = 'pow';
 exports.factory = factory;
 
-},{"../../type/fraction/function/fraction":448,"../../type/matrix/function/matrix":460,"../../type/number":477,"../../utils/array":487,"../../utils/latex":508,"../../utils/number":509,"../matrix/eye":337,"./multiply":292}],297:[function(require,module,exports){
+},{"../../type/fraction/function/fraction":449,"../../type/matrix/function/matrix":461,"../../type/number":478,"../../utils/array":488,"../../utils/latex":509,"../../utils/number":510,"../matrix/eye":338,"./multiply":293}],298:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -27510,7 +27548,7 @@ function _round (value, decimals) {
 exports.name = 'round';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm14":476,"../../utils/collection/deepMap":501,"../../utils/number":509,"../matrix/zeros":356,"../relational/equalScalar":372}],298:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm14":477,"../../utils/collection/deepMap":502,"../../utils/number":510,"../matrix/zeros":357,"../relational/equalScalar":373}],299:[function(require,module,exports){
 'use strict';
 
 var number = require('../../utils/number');
@@ -27581,7 +27619,7 @@ exports.name = 'sign';
 exports.factory = factory;
 
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],299:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],300:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -27663,7 +27701,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sqrt';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],300:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],301:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -27730,7 +27768,7 @@ function factory (type, config, load, typed) {
 exports.name = 'square';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],301:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],302:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../error/DimensionError');
@@ -27931,7 +27969,7 @@ function factory (type, config, load, typed) {
 exports.name = 'subtract';
 exports.factory = factory;
 
-},{"../../error/DimensionError":13,"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm05":467,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"./addScalar":273,"./unaryMinus":302}],302:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm05":468,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"./addScalar":274,"./unaryMinus":303}],303:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -28003,7 +28041,7 @@ function factory (type, config, load, typed) {
 exports.name = 'unaryMinus';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/latex":508}],303:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/latex":509}],304:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -28077,7 +28115,7 @@ function factory (type, config, load, typed) {
 exports.name = 'unaryPlus';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/latex":508}],304:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/latex":509}],305:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -28216,7 +28254,7 @@ function factory (type, config, load, typed) {
 exports.name = 'xgcd';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/number":509}],305:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/number":510}],306:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -28367,7 +28405,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bitAnd';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm06":468,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/bitAnd":488,"../../utils/latex":508,"../../utils/number":509}],306:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm06":469,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/bitAnd":489,"../../utils/latex":509,"../../utils/number":510}],307:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -28425,7 +28463,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bitNot';
 exports.factory = factory;
 
-},{"../../utils/bignumber/bitNot":489,"../../utils/collection/deepMap":501,"../../utils/latex":508,"../../utils/number":509}],307:[function(require,module,exports){
+},{"../../utils/bignumber/bitNot":490,"../../utils/collection/deepMap":502,"../../utils/latex":509,"../../utils/number":510}],308:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -28576,7 +28614,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bitOr';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm04":466,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/bitOr":490,"../../utils/latex":508,"../../utils/number":509}],308:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm04":467,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/bitOr":491,"../../utils/latex":509,"../../utils/number":510}],309:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -28727,7 +28765,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bitXor';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/bitXor":491,"../../utils/latex":508,"../../utils/number":509}],309:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/bitXor":492,"../../utils/latex":509,"../../utils/number":510}],310:[function(require,module,exports){
 module.exports = [
   require('./bitAnd'),
   require('./bitNot'),
@@ -28738,7 +28776,7 @@ module.exports = [
   require('./rightLogShift')
 ];
 
-},{"./bitAnd":305,"./bitNot":306,"./bitOr":307,"./bitXor":308,"./leftShift":310,"./rightArithShift":311,"./rightLogShift":312}],310:[function(require,module,exports){
+},{"./bitAnd":306,"./bitNot":307,"./bitOr":308,"./bitXor":309,"./leftShift":311,"./rightArithShift":312,"./rightLogShift":313}],311:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -28902,7 +28940,7 @@ function factory (type, config, load, typed) {
 exports.name = 'leftShift';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm08":470,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/leftShift":495,"../../utils/latex":508,"../../utils/number":509,"../matrix/zeros":356,"../relational/equalScalar":372}],311:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm08":471,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/leftShift":496,"../../utils/latex":509,"../../utils/number":510,"../matrix/zeros":357,"../relational/equalScalar":373}],312:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -29066,7 +29104,7 @@ function factory (type, config, load, typed) {
 exports.name = 'rightArithShift';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm08":470,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/rightArithShift":497,"../../utils/latex":508,"../../utils/number":509,"../matrix/zeros":356,"../relational/equalScalar":372}],312:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm08":471,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/rightArithShift":498,"../../utils/latex":509,"../../utils/number":510,"../matrix/zeros":357,"../relational/equalScalar":373}],313:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -29230,7 +29268,7 @@ function factory (type, config, load, typed) {
 exports.name = 'rightLogShift';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm01":463,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm08":470,"../../type/matrix/utils/algorithm10":472,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"../../utils/number":509,"../matrix/zeros":356,"../relational/equalScalar":372}],313:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm01":464,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm08":471,"../../type/matrix/utils/algorithm10":473,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"../../utils/number":510,"../matrix/zeros":357,"../relational/equalScalar":373}],314:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -29285,7 +29323,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bellNumbers';
 exports.factory = factory;
 
-},{"../arithmetic/add":272,"../utils/isInteger":426,"../utils/isNegative":428,"./stirlingS2":317}],314:[function(require,module,exports){
+},{"../arithmetic/add":273,"../utils/isInteger":427,"../utils/isNegative":429,"./stirlingS2":318}],315:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -29338,7 +29376,7 @@ function factory (type, config, load, typed) {
 exports.name = 'catalan';
 exports.factory = factory;
 
-},{"../arithmetic/add":272,"../arithmetic/divide":277,"../arithmetic/multiply":292,"../probability/combinations":357,"../utils/isInteger":426,"../utils/isNegative":428}],315:[function(require,module,exports){
+},{"../arithmetic/add":273,"../arithmetic/divide":278,"../arithmetic/multiply":293,"../probability/combinations":358,"../utils/isInteger":427,"../utils/isNegative":429}],316:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -29391,7 +29429,7 @@ function factory (type, config, load, typed) {
 exports.name = 'composition';
 exports.factory = factory;
 
-},{"../arithmetic/addScalar":273,"../probability/combinations":357,"../relational/larger":374,"../utils/isInteger":426,"../utils/isPositive":430}],316:[function(require,module,exports){
+},{"../arithmetic/addScalar":274,"../probability/combinations":358,"../relational/larger":375,"../utils/isInteger":427,"../utils/isPositive":431}],317:[function(require,module,exports){
 module.exports = [
   require('./bellNumbers'),
   require('./composition'),
@@ -29399,7 +29437,7 @@ module.exports = [
   require('./catalan')
 ];
 
-},{"./bellNumbers":313,"./catalan":314,"./composition":315,"./stirlingS2":317}],317:[function(require,module,exports){
+},{"./bellNumbers":314,"./catalan":315,"./composition":316,"./stirlingS2":318}],318:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -29470,7 +29508,7 @@ function factory (type, config, load, typed) {
 exports.name = 'stirlingS2';
 exports.factory = factory;
 
-},{"../arithmetic/add":272,"../arithmetic/divide":277,"../arithmetic/multiply":292,"../arithmetic/pow":296,"../arithmetic/subtract":301,"../probability/combinations":357,"../probability/factorial":359,"../relational/larger":374,"../utils/isInteger":426,"../utils/isNegative":428}],318:[function(require,module,exports){
+},{"../arithmetic/add":273,"../arithmetic/divide":278,"../arithmetic/multiply":293,"../arithmetic/pow":297,"../arithmetic/subtract":302,"../probability/combinations":358,"../probability/factorial":360,"../relational/larger":375,"../utils/isInteger":427,"../utils/isNegative":429}],319:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -29531,7 +29569,7 @@ function factory (type, config, load, typed) {
 exports.name = 'arg';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],319:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],320:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -29588,7 +29626,7 @@ function factory (type, config, load, typed) {
 exports.name = 'conj';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],320:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],321:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -29647,7 +29685,7 @@ function factory (type, config, load, typed) {
 exports.name = 'im';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],321:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],322:[function(require,module,exports){
 module.exports = [
   require('./arg'),
   require('./conj'),
@@ -29655,7 +29693,7 @@ module.exports = [
   require('./re')
 ];
 
-},{"./arg":318,"./conj":319,"./im":320,"./re":322}],322:[function(require,module,exports){
+},{"./arg":319,"./conj":320,"./im":321,"./re":323}],323:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -29714,7 +29752,7 @@ function factory (type, config, load, typed) {
 exports.name = 're';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],323:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],324:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -30017,13 +30055,13 @@ function _distancePairwise(a){
 exports.name = 'distance';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460}],324:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461}],325:[function(require,module,exports){
 module.exports = [
   require('./intersect'),
   require('./distance')
 ];
 
-},{"./distance":323,"./intersect":325}],325:[function(require,module,exports){
+},{"./distance":324,"./intersect":326}],326:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -30167,7 +30205,7 @@ function factory (type, config, load, typed) {
 exports.name = 'intersect';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../arithmetic/abs":271,"../arithmetic/add":272,"../arithmetic/multiply":292,"../arithmetic/subtract":301}],326:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../arithmetic/abs":272,"../arithmetic/add":273,"../arithmetic/multiply":293,"../arithmetic/subtract":302}],327:[function(require,module,exports){
 module.exports = [
   require('./algebra'),
   require('./arithmetic'),
@@ -30187,7 +30225,7 @@ module.exports = [
   require('./utils')
 ];
 
-},{"./algebra":245,"./arithmetic":287,"./bitwise":309,"./combinatorics":316,"./complex":321,"./geometry":324,"./logical":328,"./matrix":341,"./probability":361,"./relational":373,"./special":380,"./statistics":381,"./string":394,"./trigonometry":415,"./unit":422,"./utils":425}],327:[function(require,module,exports){
+},{"./algebra":246,"./arithmetic":288,"./bitwise":310,"./combinatorics":317,"./complex":322,"./geometry":325,"./logical":329,"./matrix":342,"./probability":362,"./relational":374,"./special":381,"./statistics":382,"./string":395,"./trigonometry":416,"./unit":423,"./utils":426}],328:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -30360,7 +30398,7 @@ function factory (type, config, load, typed) {
 exports.name = 'and';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm06":468,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"../matrix/zeros":356,"../utils/isZero":432,"./not":329}],328:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm06":469,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"../matrix/zeros":357,"../utils/isZero":433,"./not":330}],329:[function(require,module,exports){
 module.exports = [
   require('./and'),
   require('./not'),
@@ -30368,7 +30406,7 @@ module.exports = [
   require('./xor')
 ];
 
-},{"./and":327,"./not":329,"./or":330,"./xor":331}],329:[function(require,module,exports){
+},{"./and":328,"./not":330,"./or":331,"./xor":332}],330:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -30433,7 +30471,7 @@ function factory (type, config, load, typed) {
 exports.name = 'not';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/latex":508}],330:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/latex":509}],331:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -30593,7 +30631,7 @@ function factory (type, config, load, typed) {
 exports.name = 'or';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm05":467,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508}],331:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm05":468,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509}],332:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -30753,7 +30791,7 @@ function factory (type, config, load, typed) {
 exports.name = 'xor';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508}],332:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509}],333:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -30899,7 +30937,7 @@ function _concat(a, b, concatDim, dim) {
 exports.name = 'concat';
 exports.factory = factory;
 
-},{"../../error/DimensionError":13,"../../error/IndexError":14,"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509,"../../utils/object":510}],333:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../error/IndexError":15,"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510,"../../utils/object":511}],334:[function(require,module,exports){
 'use strict';
 
 var array = require('../../utils/array');
@@ -31002,7 +31040,7 @@ function factory (type, config, load, typed) {
 exports.name = 'cross';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../arithmetic/multiply":292,"../arithmetic/subtract":301}],334:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../arithmetic/multiply":293,"../arithmetic/subtract":302}],335:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -31172,7 +31210,7 @@ exports.name = 'det';
 exports.factory = factory;
 
 
-},{"../../type/matrix/function/matrix":460,"../../utils/index":507,"../arithmetic/add":272,"../arithmetic/multiply":292,"../arithmetic/subtract":301,"../arithmetic/unaryMinus":302}],335:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/index":508,"../arithmetic/add":273,"../arithmetic/multiply":293,"../arithmetic/subtract":302,"../arithmetic/unaryMinus":303}],336:[function(require,module,exports){
 'use strict';
 
 var array     = require('../../utils/array');
@@ -31344,7 +31382,7 @@ function factory (type, config, load, typed) {
 exports.name = 'diag';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509,"../../utils/object":510}],336:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510,"../../utils/object":511}],337:[function(require,module,exports){
 'use strict';
 
 var size = require('../../utils/array').size;
@@ -31425,7 +31463,7 @@ function factory (type, config, load, typed) {
 exports.name = 'dot';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../arithmetic/add":272,"../arithmetic/multiply":292}],337:[function(require,module,exports){
+},{"../../utils/array":488,"../arithmetic/add":273,"../arithmetic/multiply":293}],338:[function(require,module,exports){
 'use strict';
 
 var array = require('../../utils/array');
@@ -31573,7 +31611,7 @@ function factory (type, config, load, typed) {
 exports.name = 'eye';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509}],338:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510}],339:[function(require,module,exports){
 'use strict';
 
 var size = require('../../utils/array').size;
@@ -31679,7 +31717,7 @@ function _filterRegExp (x, regexp) {
 exports.name = 'filter';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/function":506}],339:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/function":507}],340:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -31726,7 +31764,7 @@ function factory (type, config, load, typed) {
 exports.name = 'flatten';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/object":510}],340:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/object":511}],341:[function(require,module,exports){
 'use strict';
 
 var maxArgumentCount = require('../../utils/function').maxArgumentCount;
@@ -31804,7 +31842,7 @@ function _forEach (array, callback) {
 exports.name = 'forEach';
 exports.factory = factory;
 
-},{"../../utils/function":506}],341:[function(require,module,exports){
+},{"../../utils/function":507}],342:[function(require,module,exports){
 module.exports = [
   require('./concat'),
   require('./cross'),
@@ -31832,7 +31870,7 @@ module.exports = [
   require('./zeros')
 ];
 
-},{"./concat":332,"./cross":333,"./det":334,"./diag":335,"./dot":336,"./eye":337,"./filter":338,"./flatten":339,"./forEach":340,"./inv":342,"./kron":343,"./map":344,"./ones":345,"./partitionSelect":346,"./range":347,"./reshape":348,"./resize":349,"./size":350,"./sort":351,"./squeeze":352,"./subset":353,"./trace":354,"./transpose":355,"./zeros":356}],342:[function(require,module,exports){
+},{"./concat":333,"./cross":334,"./det":335,"./diag":336,"./dot":337,"./eye":338,"./filter":339,"./flatten":340,"./forEach":341,"./inv":343,"./kron":344,"./map":345,"./ones":346,"./partitionSelect":347,"./range":348,"./reshape":349,"./resize":350,"./size":351,"./sort":352,"./squeeze":353,"./subset":354,"./trace":355,"./transpose":356,"./zeros":357}],343:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -32041,7 +32079,7 @@ function factory (type, config, load, typed) {
 exports.name = 'inv';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/index":507,"../arithmetic/addScalar":273,"../arithmetic/divideScalar":278,"../arithmetic/multiply":292,"../arithmetic/unaryMinus":302,"../matrix/det":334,"./eye":337}],343:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/index":508,"../arithmetic/addScalar":274,"../arithmetic/divideScalar":279,"../arithmetic/multiply":293,"../arithmetic/unaryMinus":303,"../matrix/det":335,"./eye":338}],344:[function(require,module,exports){
 'use strict';
 
 var size = require('../../utils/array').size;
@@ -32133,7 +32171,7 @@ function factory(type, config, load, typed) {
 exports.name = 'kron';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../arithmetic/multiplyScalar":293}],344:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../arithmetic/multiplyScalar":294}],345:[function(require,module,exports){
 'use strict';
 
 var maxArgumentCount = require('../../utils/function').maxArgumentCount;
@@ -32214,7 +32252,7 @@ function _map (array, callback) {
 exports.name = 'map';
 exports.factory = factory;
 
-},{"../../utils/function":506}],345:[function(require,module,exports){
+},{"../../utils/function":507}],346:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -32350,7 +32388,7 @@ function factory (type, config, load, typed) {
 exports.name = 'ones';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509}],346:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510}],347:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -32488,7 +32526,7 @@ function factory (type, config, load, typed) {
 exports.name = 'partitionSelect';
 exports.factory = factory;
 
-},{"../../utils/number":509,"../relational/compare":369}],347:[function(require,module,exports){
+},{"../../utils/number":510,"../relational/compare":370}],348:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -32769,7 +32807,7 @@ function factory (type, config, load, typed) {
 exports.name = 'range';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460}],348:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461}],349:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../error/DimensionError');
@@ -32845,7 +32883,7 @@ function factory (type, config, load, typed) {
 exports.name = 'reshape';
 exports.factory = factory;
 
-},{"../../error/DimensionError":13,"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509}],349:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510}],350:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../error/DimensionError');
@@ -32985,7 +33023,7 @@ function factory (type, config, load, typed) {
 exports.name = 'resize';
 exports.factory = factory;
 
-},{"../../error/ArgumentsError":12,"../../error/DimensionError":13,"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509,"../../utils/object":510,"../../utils/string":511}],350:[function(require,module,exports){
+},{"../../error/ArgumentsError":13,"../../error/DimensionError":14,"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510,"../../utils/object":511,"../../utils/string":512}],351:[function(require,module,exports){
 'use strict';
 
 var array = require('../../utils/array');
@@ -33042,7 +33080,7 @@ function factory (type, config, load, typed) {
 exports.name = 'size';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487}],351:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488}],352:[function(require,module,exports){
 'use strict';
 
 var size = require('../../utils/array').size;
@@ -33164,7 +33202,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sort';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../relational/compare":369}],352:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../relational/compare":370}],353:[function(require,module,exports){
 'use strict';
 
 var object = require('../../utils/object');
@@ -33227,7 +33265,7 @@ function factory (type, config, load, typed) {
 exports.name = 'squeeze';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/object":510}],353:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/object":511}],354:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -33458,7 +33496,7 @@ function _setObjectProperty (object, index, replacement) {
 exports.name = 'subset';
 exports.factory = factory;
 
-},{"../../error/DimensionError":13,"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/object":510}],354:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/object":511}],355:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -33607,7 +33645,7 @@ function factory (type, config, load, typed) {
 exports.name = 'trace';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/object":510,"../../utils/string":511,"../arithmetic/add":272}],355:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/object":511,"../../utils/string":512,"../arithmetic/add":273}],356:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -33787,7 +33825,7 @@ function factory (type, config, load, typed) {
 exports.name = 'transpose';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/latex":508,"../../utils/object":510,"../../utils/string":511}],356:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/latex":509,"../../utils/object":511,"../../utils/string":512}],357:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -33923,7 +33961,7 @@ function factory (type, config, load, typed) {
 exports.name = 'zeros';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/number":509}],357:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/number":510}],358:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -34016,7 +34054,7 @@ function isPositiveInteger(n) {
 exports.name = 'combinations';
 exports.factory = factory;
 
-},{"../../utils/number":509}],358:[function(require,module,exports){
+},{"../../utils/number":510}],359:[function(require,module,exports){
 'use strict';
 
 var ArgumentsError = require('../../error/ArgumentsError');
@@ -34317,7 +34355,7 @@ function factory (type, config, load, typed, math) {
 exports.name = 'distribution';
 exports.factory = factory;
 
-},{"../../error/ArgumentsError":12,"../../type/matrix/function/matrix":460,"../../utils/array":487,"../../utils/collection/isCollection":502,"../../utils/number":509,"./seededRNG":368}],359:[function(require,module,exports){
+},{"../../error/ArgumentsError":13,"../../type/matrix/function/matrix":461,"../../utils/array":488,"../../utils/collection/isCollection":503,"../../utils/number":510,"./seededRNG":369}],360:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -34380,7 +34418,7 @@ function factory (type, config, load, typed) {
 exports.name = 'factorial';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/latex":508,"./gamma":360}],360:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/latex":509,"./gamma":361}],361:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -34584,7 +34622,7 @@ var p = [
 exports.name = 'gamma';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509,"../arithmetic/multiply":292,"../arithmetic/pow":296}],361:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510,"../arithmetic/multiply":293,"../arithmetic/pow":297}],362:[function(require,module,exports){
 module.exports = [
   //require('./distribution'), // TODO: rethink math.distribution
   require('./combinations'),
@@ -34598,7 +34636,7 @@ module.exports = [
   require('./randomInt')
 ];
 
-},{"./combinations":357,"./factorial":359,"./gamma":360,"./kldivergence":362,"./multinomial":363,"./permutations":364,"./pickRandom":365,"./random":366,"./randomInt":367}],362:[function(require,module,exports){
+},{"./combinations":358,"./factorial":360,"./gamma":361,"./kldivergence":363,"./multinomial":364,"./permutations":365,"./pickRandom":366,"./random":367,"./randomInt":368}],363:[function(require,module,exports){
 'use strict';
 
 
@@ -34691,7 +34729,7 @@ exports.name = 'kldivergence';
 exports.factory = factory;
  
 
-},{"../../type/matrix/function/matrix":460,"../arithmetic/divide":277,"../arithmetic/dotDivide":279,"../arithmetic/log":289,"../arithmetic/multiply":292,"../statistics/sum":391,"../utils/isNumeric":429}],363:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../arithmetic/divide":278,"../arithmetic/dotDivide":280,"../arithmetic/log":290,"../arithmetic/multiply":293,"../statistics/sum":392,"../utils/isNumeric":430}],364:[function(require,module,exports){
 'use strict';
 
 var deepForEach = require('../../utils/collection/deepForEach');
@@ -34746,7 +34784,7 @@ function factory (type, config, load, typed) {
 exports.name = 'multinomial';
 exports.factory = factory;
 
-},{"../../utils/collection/deepForEach":500,"../arithmetic/add":272,"../arithmetic/divide":277,"../arithmetic/multiply":292,"../probability/factorial":359,"../utils/isInteger":426,"../utils/isPositive":430}],364:[function(require,module,exports){
+},{"../../utils/collection/deepForEach":501,"../arithmetic/add":273,"../arithmetic/divide":278,"../arithmetic/multiply":293,"../probability/factorial":360,"../utils/isInteger":427,"../utils/isPositive":431}],365:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -34842,7 +34880,7 @@ function isPositiveInteger(n) {
 exports.name = 'permutations';
 exports.factory = factory;
 
-},{"../../utils/number":509,"./factorial":359}],365:[function(require,module,exports){
+},{"../../utils/number":510,"./factorial":360}],366:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -34889,7 +34927,7 @@ function factory (type, config, load, typed) {
 exports.name = 'pickRandom';
 exports.factory = factory;
 
-},{"./distribution":358}],366:[function(require,module,exports){
+},{"./distribution":359}],367:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -34936,7 +34974,7 @@ function factory (type, config, load, typed) {
 exports.name = 'random';
 exports.factory = factory;
 
-},{"./distribution":358}],367:[function(require,module,exports){
+},{"./distribution":359}],368:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -34981,7 +35019,7 @@ function factory (type, config, load, typed) {
 exports.name = 'randomInt';
 exports.factory = factory;
 
-},{"./distribution":358}],368:[function(require,module,exports){
+},{"./distribution":359}],369:[function(require,module,exports){
 'use strict';
 var seedrandom = require('seed-random');
 
@@ -35010,7 +35048,7 @@ function factory (type, config, load, typed, math) {
 exports.factory = factory;
 exports.math = true;
 
-},{"seed-random":514}],369:[function(require,module,exports){
+},{"seed-random":515}],370:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -35194,7 +35232,7 @@ function factory (type, config, load, typed) {
 exports.name = 'compare';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm05":467,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/number":509}],370:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm05":468,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/number":510}],371:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -35277,7 +35315,7 @@ function factory (type, config, load, typed) {
 exports.name = 'deepEqual';
 exports.factory = factory;
 
-},{"./equal":371}],371:[function(require,module,exports){
+},{"./equal":372}],372:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -35448,7 +35486,7 @@ function factory (type, config, load, typed) {
 exports.name = 'equal';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508,"./equalScalar":372}],372:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509,"./equalScalar":373}],373:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -35503,7 +35541,7 @@ function factory (type, config, load, typed) {
 
 exports.factory = factory;
 
-},{"../../utils/bignumber/nearlyEqual":496,"../../utils/number":509}],373:[function(require,module,exports){
+},{"../../utils/bignumber/nearlyEqual":497,"../../utils/number":510}],374:[function(require,module,exports){
 module.exports = [
   require('./compare'),
   require('./deepEqual'),
@@ -35515,7 +35553,7 @@ module.exports = [
   require('./unequal')
 ];
 
-},{"./compare":369,"./deepEqual":370,"./equal":371,"./larger":374,"./largerEq":375,"./smaller":376,"./smallerEq":377,"./unequal":378}],374:[function(require,module,exports){
+},{"./compare":370,"./deepEqual":371,"./equal":372,"./larger":375,"./largerEq":376,"./smaller":377,"./smallerEq":378,"./unequal":379}],375:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -35696,7 +35734,7 @@ function factory (type, config, load, typed) {
 exports.name = 'larger';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/latex":508,"../../utils/number":509}],375:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/latex":509,"../../utils/number":510}],376:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -35873,7 +35911,7 @@ function factory (type, config, load, typed) {
 exports.name = 'largerEq';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/latex":508,"../../utils/number":509}],376:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/latex":509,"../../utils/number":510}],377:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -36054,7 +36092,7 @@ function factory (type, config, load, typed) {
 exports.name = 'smaller';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/latex":508,"../../utils/number":509}],377:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/latex":509,"../../utils/number":510}],378:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -36230,7 +36268,7 @@ function factory (type, config, load, typed) {
 exports.name = 'smallerEq';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/latex":508,"../../utils/number":509}],378:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/latex":509,"../../utils/number":510}],379:[function(require,module,exports){
 'use strict';
 
 var nearlyEqual = require('../../utils/number').nearlyEqual;
@@ -36436,7 +36474,7 @@ function factory (type, config, load, typed) {
 exports.name = 'unequal';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm07":469,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/bignumber/nearlyEqual":496,"../../utils/latex":508,"../../utils/number":509}],379:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm07":470,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/bignumber/nearlyEqual":497,"../../utils/latex":509,"../../utils/number":510}],380:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -36635,12 +36673,12 @@ var MAX_NUM = Math.pow(2, 53);
 exports.name = 'erf';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],380:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],381:[function(require,module,exports){
 module.exports = [
   require('./erf')
 ];
 
-},{"./erf":379}],381:[function(require,module,exports){
+},{"./erf":380}],382:[function(require,module,exports){
 module.exports = [
   require('./mad'),
   require('./max'),
@@ -36655,7 +36693,7 @@ module.exports = [
   require('./var')
 ];
 
-},{"./mad":382,"./max":383,"./mean":384,"./median":385,"./min":386,"./mode":387,"./prod":388,"./quantileSeq":389,"./std":390,"./sum":391,"./var":392}],382:[function(require,module,exports){
+},{"./mad":383,"./max":384,"./mean":385,"./median":386,"./min":387,"./mode":388,"./prod":389,"./quantileSeq":390,"./std":391,"./sum":392,"./var":393}],383:[function(require,module,exports){
 'use strict';
 
 var flatten = require('../../utils/array').flatten;
@@ -36721,7 +36759,7 @@ function factory (type, config, load, typed) {
 exports.name = 'mad';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../arithmetic/abs":271,"../arithmetic/subtract":301,"../matrix/map":344,"../statistics/median":385}],383:[function(require,module,exports){
+},{"../../utils/array":488,"../arithmetic/abs":272,"../arithmetic/subtract":302,"../matrix/map":345,"../statistics/median":386}],384:[function(require,module,exports){
 'use strict';
 
 var deepForEach = require('../../utils/collection/deepForEach');
@@ -36822,7 +36860,7 @@ function factory (type, config, load, typed) {
 exports.name = 'max';
 exports.factory = factory;
 
-},{"../../utils/collection/containsCollections":499,"../../utils/collection/deepForEach":500,"../../utils/collection/reduce":503,"../relational/larger":374}],384:[function(require,module,exports){
+},{"../../utils/collection/containsCollections":500,"../../utils/collection/deepForEach":501,"../../utils/collection/reduce":504,"../relational/larger":375}],385:[function(require,module,exports){
 'use strict';
 
 var size = require('../../utils/array').size;
@@ -36922,7 +36960,7 @@ function factory (type, config, load, typed) {
 exports.name = 'mean';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../../utils/collection/containsCollections":499,"../../utils/collection/deepForEach":500,"../../utils/collection/reduce":503,"../arithmetic/add":272,"../arithmetic/divide":277}],385:[function(require,module,exports){
+},{"../../utils/array":488,"../../utils/collection/containsCollections":500,"../../utils/collection/deepForEach":501,"../../utils/collection/reduce":504,"../arithmetic/add":273,"../arithmetic/divide":278}],386:[function(require,module,exports){
 'use strict';
 
 var flatten = require('../../utils/array').flatten;
@@ -37042,7 +37080,7 @@ function factory (type, config, load, typed) {
 exports.name = 'median';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../../utils/collection/containsCollections":499,"../../utils/collection/reduce":503,"../arithmetic/addScalar":273,"../arithmetic/divideScalar":278,"../matrix/partitionSelect":346,"../relational/compare":369}],386:[function(require,module,exports){
+},{"../../utils/array":488,"../../utils/collection/containsCollections":500,"../../utils/collection/reduce":504,"../arithmetic/addScalar":274,"../arithmetic/divideScalar":279,"../matrix/partitionSelect":347,"../relational/compare":370}],387:[function(require,module,exports){
 'use strict';
 
 var deepForEach = require('../../utils/collection/deepForEach');
@@ -37143,7 +37181,7 @@ function factory (type, config, load, typed) {
 exports.name = 'min';
 exports.factory = factory;
 
-},{"../../utils/collection/containsCollections":499,"../../utils/collection/deepForEach":500,"../../utils/collection/reduce":503,"../relational/smaller":376}],387:[function(require,module,exports){
+},{"../../utils/collection/containsCollections":500,"../../utils/collection/deepForEach":501,"../../utils/collection/reduce":504,"../relational/smaller":377}],388:[function(require,module,exports){
 'use strict';
 
 var flatten = require('../../utils/array').flatten;
@@ -37221,7 +37259,7 @@ function factory (type, config, load, typed) {
 
 exports.name = 'mode';
 exports.factory = factory;
-},{"../../utils/array":487}],388:[function(require,module,exports){
+},{"../../utils/array":488}],389:[function(require,module,exports){
 'use strict';
 
 var deepForEach = require('../../utils/collection/deepForEach');
@@ -37299,7 +37337,7 @@ function factory (type, config, load, typed) {
 exports.name = 'prod';
 exports.factory = factory;
 
-},{"../../utils/collection/deepForEach":500,"../arithmetic/multiplyScalar":293}],389:[function(require,module,exports){
+},{"../../utils/collection/deepForEach":501,"../arithmetic/multiplyScalar":294}],390:[function(require,module,exports){
 'use strict';
 
 var isInteger = require('../../utils/number').isInteger;
@@ -37558,7 +37596,7 @@ function factory (type, config, load, typed) {
 exports.name = 'quantileSeq';
 exports.factory = factory;
 
-},{"../../utils/array":487,"../../utils/collection/isCollection":502,"../../utils/number":509,"../arithmetic/add":272,"../arithmetic/multiply":292,"../matrix/partitionSelect":346,"../relational/compare":369}],390:[function(require,module,exports){
+},{"../../utils/array":488,"../../utils/collection/isCollection":503,"../../utils/number":510,"../arithmetic/add":273,"../arithmetic/multiply":293,"../matrix/partitionSelect":347,"../relational/compare":370}],391:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -37634,7 +37672,7 @@ function factory (type, config, load, typed) {
 exports.name = 'std';
 exports.factory = factory;
 
-},{"../arithmetic/sqrt":299,"../statistics/var":392}],391:[function(require,module,exports){
+},{"../arithmetic/sqrt":300,"../statistics/var":393}],392:[function(require,module,exports){
 'use strict';
 
 var deepForEach = require('../../utils/collection/deepForEach');
@@ -37720,7 +37758,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sum';
 exports.factory = factory;
 
-},{"../../utils/collection/deepForEach":500,"../arithmetic/addScalar":273}],392:[function(require,module,exports){
+},{"../../utils/collection/deepForEach":501,"../arithmetic/addScalar":274}],393:[function(require,module,exports){
 'use strict';
 
 var DEFAULT_NORMALIZATION = 'unbiased';
@@ -37850,7 +37888,7 @@ function factory (type, config, load, typed) {
 exports.name = 'var';
 exports.factory = factory;
 
-},{"../../utils/collection/deepForEach":500,"../arithmetic/addScalar":273,"../arithmetic/divideScalar":278,"../arithmetic/multiplyScalar":293,"../arithmetic/subtract":301}],393:[function(require,module,exports){
+},{"../../utils/collection/deepForEach":501,"../arithmetic/addScalar":274,"../arithmetic/divideScalar":279,"../arithmetic/multiplyScalar":294,"../arithmetic/subtract":302}],394:[function(require,module,exports){
 'use strict';
 
 var string = require('../../utils/string');
@@ -37966,13 +38004,13 @@ function factory (type, config, load, typed) {
 exports.name = 'format';
 exports.factory = factory;
 
-},{"../../utils/string":511}],394:[function(require,module,exports){
+},{"../../utils/string":512}],395:[function(require,module,exports){
 module.exports = [
   require('./format'),
   require('./print')
 ];
 
-},{"./format":393,"./print":395}],395:[function(require,module,exports){
+},{"./format":394,"./print":396}],396:[function(require,module,exports){
 'use strict';
 
 var isString = require('../../utils/string').isString;
@@ -38061,7 +38099,7 @@ function _print(template, values, options) {
 exports.name = 'print';
 exports.factory = factory;
 
-},{"../../utils/string":511}],396:[function(require,module,exports){
+},{"../../utils/string":512}],397:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38122,7 +38160,7 @@ function factory (type, config, load, typed) {
 exports.name = 'acos';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],397:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],398:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38192,7 +38230,7 @@ var _acosh = Math.acosh || function (x) {
 exports.name = 'acosh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],398:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],399:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38248,7 +38286,7 @@ function factory (type, config, load, typed) {
 exports.name = 'acot';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],399:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],400:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38305,7 +38343,7 @@ function factory (type, config, load, typed) {
 exports.name = 'acoth';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],400:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],401:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38365,7 +38403,7 @@ function factory (type, config, load, typed) {
 exports.name = 'acsc';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],401:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],402:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38420,7 +38458,7 @@ function factory (type, config, load, typed) {
 exports.name = 'acsch';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],402:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],403:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38479,7 +38517,7 @@ function factory (type, config, load, typed) {
 exports.name = 'asec';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],403:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],404:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38545,7 +38583,7 @@ function factory (type, config, load, typed) {
 exports.name = 'asech';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"./acosh":397}],404:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"./acosh":398}],405:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38607,7 +38645,7 @@ function factory (type, config, load, typed) {
 exports.name = 'asin';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],405:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],406:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38662,7 +38700,7 @@ function factory (type, config, load, typed) {
 exports.name = 'asinh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],406:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],407:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38719,7 +38757,7 @@ function factory (type, config, load, typed) {
 exports.name = 'atan';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],407:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],408:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -38873,7 +38911,7 @@ function factory (type, config, load, typed) {
 exports.name = 'atan2';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm02":464,"../../type/matrix/utils/algorithm03":465,"../../type/matrix/utils/algorithm09":471,"../../type/matrix/utils/algorithm11":473,"../../type/matrix/utils/algorithm12":474,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476}],408:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm02":465,"../../type/matrix/utils/algorithm03":466,"../../type/matrix/utils/algorithm09":472,"../../type/matrix/utils/algorithm11":474,"../../type/matrix/utils/algorithm12":475,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477}],409:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -38940,7 +38978,7 @@ var _atanh = Math.atanh || function (x) {
 exports.name = 'atanh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],409:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],410:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39004,7 +39042,7 @@ function factory (type, config, load, typed) {
 exports.name = 'cos';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],410:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],411:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39072,7 +39110,7 @@ var _cosh = Math.cosh || function (x) {
 exports.name = 'cosh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],411:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],412:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39132,7 +39170,7 @@ function factory (type, config, load, typed) {
 exports.name = 'cot';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],412:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],413:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39203,7 +39241,7 @@ function _coth(x) {
 exports.name = 'coth';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],413:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],414:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39263,7 +39301,7 @@ function factory (type, config, load, typed) {
 exports.name = 'csc';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],414:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],415:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39340,7 +39378,7 @@ function _csch(x) {
 exports.name = 'csch';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],415:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],416:[function(require,module,exports){
 module.exports = [
   require('./acos'),
   require('./acosh'),
@@ -39369,7 +39407,7 @@ module.exports = [
   require('./tanh')
 ];
 
-},{"./acos":396,"./acosh":397,"./acot":398,"./acoth":399,"./acsc":400,"./acsch":401,"./asec":402,"./asech":403,"./asin":404,"./asinh":405,"./atan":406,"./atan2":407,"./atanh":408,"./cos":409,"./cosh":410,"./cot":411,"./coth":412,"./csc":413,"./csch":414,"./sec":416,"./sech":417,"./sin":418,"./sinh":419,"./tan":420,"./tanh":421}],416:[function(require,module,exports){
+},{"./acos":397,"./acosh":398,"./acot":399,"./acoth":400,"./acsc":401,"./acsch":402,"./asec":403,"./asech":404,"./asin":405,"./asinh":406,"./atan":407,"./atan2":408,"./atanh":409,"./cos":410,"./cosh":411,"./cot":412,"./coth":413,"./csc":414,"./csch":415,"./sec":417,"./sech":418,"./sin":419,"./sinh":420,"./tan":421,"./tanh":422}],417:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39429,7 +39467,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sec';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],417:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],418:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39499,7 +39537,7 @@ function _sech(x) {
 exports.name = 'sech';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],418:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],419:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39564,7 +39602,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sin';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],419:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],420:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39633,7 +39671,7 @@ var _sinh = Math.sinh || function (x) {
 exports.name = 'sinh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],420:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],421:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39694,7 +39732,7 @@ function factory (type, config, load, typed) {
 exports.name = 'tan';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],421:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],422:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39767,11 +39805,11 @@ var _tanh = Math.tanh || function (x) {
 exports.name = 'tanh';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],422:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],423:[function(require,module,exports){
 module.exports = [
   require('./to')
 ];
-},{"./to":423}],423:[function(require,module,exports){
+},{"./to":424}],424:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -39863,7 +39901,7 @@ function factory (type, config, load, typed) {
 exports.name = 'to';
 exports.factory = factory;
 
-},{"../../type/matrix/function/matrix":460,"../../type/matrix/utils/algorithm13":475,"../../type/matrix/utils/algorithm14":476,"../../utils/latex":508}],424:[function(require,module,exports){
+},{"../../type/matrix/function/matrix":461,"../../type/matrix/utils/algorithm13":476,"../../type/matrix/utils/algorithm14":477,"../../utils/latex":509}],425:[function(require,module,exports){
 'use strict';
 
 var object= require('../../utils/object');
@@ -39899,7 +39937,7 @@ function factory (type, config, load, typed) {
 exports.name = 'clone';
 exports.factory = factory;
 
-},{"../../utils/object":510}],425:[function(require,module,exports){
+},{"../../utils/object":511}],426:[function(require,module,exports){
 module.exports = [
   require('./clone'),
   require('./isInteger'),
@@ -39912,7 +39950,7 @@ module.exports = [
   require('./typeof')
 ];
 
-},{"./clone":424,"./isInteger":426,"./isNaN":427,"./isNegative":428,"./isNumeric":429,"./isPositive":430,"./isPrime":431,"./isZero":432,"./typeof":433}],426:[function(require,module,exports){
+},{"./clone":425,"./isInteger":427,"./isNaN":428,"./isNegative":429,"./isNumeric":430,"./isPositive":431,"./isPrime":432,"./isZero":433,"./typeof":434}],427:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -39970,7 +40008,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isInteger';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],427:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],428:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40038,7 +40076,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isNaN';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],428:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],429:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40102,7 +40140,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isNegative';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],429:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],430:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40157,7 +40195,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isNumeric';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],430:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],431:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40223,7 +40261,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isPositive';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],431:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],432:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40306,7 +40344,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isPrime';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501}],432:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502}],433:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../utils/collection/deepMap');
@@ -40378,7 +40416,7 @@ function factory (type, config, load, typed) {
 exports.name = 'isZero';
 exports.factory = factory;
 
-},{"../../utils/collection/deepMap":501,"../../utils/number":509}],433:[function(require,module,exports){
+},{"../../utils/collection/deepMap":502,"../../utils/number":510}],434:[function(require,module,exports){
 'use strict';
 
 var types = require('../../utils/types');
@@ -40457,7 +40495,7 @@ function factory (type, config, load, typed) {
 exports.name = 'typeof';
 exports.factory = factory;
 
-},{"../../utils/types":512}],434:[function(require,module,exports){
+},{"../../utils/types":513}],435:[function(require,module,exports){
 module.exports = [
   require('./type'),        // data types (Matrix, Complex, Unit, ...)
   require('./constants'),   // constants
@@ -40467,12 +40505,12 @@ module.exports = [
   require('./error')        // errors
 ];
 
-},{"./constants":7,"./error":15,"./expression":206,"./function":326,"./json":435,"./type":450}],435:[function(require,module,exports){
+},{"./constants":8,"./error":16,"./expression":207,"./function":327,"./json":436,"./type":451}],436:[function(require,module,exports){
 module.exports = [
   require('./reviver')
 ];
 
-},{"./reviver":436}],436:[function(require,module,exports){
+},{"./reviver":437}],437:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -40496,7 +40534,7 @@ exports.name = 'reviver';
 exports.path = 'json';
 exports.factory = factory;
 
-},{}],437:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 var Decimal = require('decimal.js');
 
 function factory (type, config, load, typed, math) {
@@ -40545,7 +40583,7 @@ exports.name = 'BigNumber';
 exports.path = 'type';
 exports.factory = factory;
 exports.math = true; // request access to the math namespace
-},{"decimal.js":3}],438:[function(require,module,exports){
+},{"decimal.js":4}],439:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -40615,7 +40653,7 @@ function factory (type, config, load, typed) {
 exports.name = 'bignumber';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501}],439:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502}],440:[function(require,module,exports){
 module.exports = [
   // type
   require('./BigNumber'),
@@ -40624,7 +40662,7 @@ module.exports = [
   require('./function/bignumber')
 ];
 
-},{"./BigNumber":437,"./function/bignumber":438}],440:[function(require,module,exports){
+},{"./BigNumber":438,"./function/bignumber":439}],441:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('./../utils/collection/deepMap');
@@ -40704,7 +40742,7 @@ function factory (type, config, load, typed) {
 exports.name = 'boolean';
 exports.factory = factory;
 
-},{"./../utils/collection/deepMap":501}],441:[function(require,module,exports){
+},{"./../utils/collection/deepMap":502}],442:[function(require,module,exports){
 'use strict';
 
 var format = require('../../utils/string').format;
@@ -40871,7 +40909,7 @@ exports.factory = factory;
 exports.math = true;  // require providing the math namespace as 5th argument
 exports.lazy = false; // we need to register a listener on the import events, so no lazy loading
 
-},{"../../utils/object":510,"../../utils/string":511}],442:[function(require,module,exports){
+},{"../../utils/object":511,"../../utils/string":512}],443:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -40924,7 +40962,7 @@ function factory (type, config, load, typed) {
 exports.name = 'chain';
 exports.factory = factory;
 
-},{}],443:[function(require,module,exports){
+},{}],444:[function(require,module,exports){
 module.exports = [
   // type
   require('./Chain'),
@@ -40933,7 +40971,7 @@ module.exports = [
   require('./function/chain')
 ];
 
-},{"./Chain":441,"./function/chain":442}],444:[function(require,module,exports){
+},{"./Chain":442,"./function/chain":443}],445:[function(require,module,exports){
 var Complex = require('complex.js');
 var format = require('../../utils/number').format;
 var isNumber = require('../../utils/number').isNumber;
@@ -41107,7 +41145,7 @@ exports.path = 'type';
 exports.factory = factory;
 exports.math = true; // request access to the math namespace
 
-},{"../../utils/number":509,"complex.js":2}],445:[function(require,module,exports){
+},{"../../utils/number":510,"complex.js":3}],446:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -41209,7 +41247,7 @@ function factory (type, config, load, typed) {
 exports.name = 'complex';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501,"../../../utils/latex":508}],446:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502,"../../../utils/latex":509}],447:[function(require,module,exports){
 module.exports = [
   // type
   require('./Complex'),
@@ -41218,7 +41256,7 @@ module.exports = [
   require('./function/complex')
 ];
 
-},{"./Complex":444,"./function/complex":445}],447:[function(require,module,exports){
+},{"./Complex":445,"./function/complex":446}],448:[function(require,module,exports){
 var Fraction = require('fraction.js');
 
 /**
@@ -41259,7 +41297,7 @@ exports.name = 'Fraction';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"fraction.js":4}],448:[function(require,module,exports){
+},{"fraction.js":5}],449:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -41330,7 +41368,7 @@ function factory (type, config, load, typed) {
 exports.name = 'fraction';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501}],449:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502}],450:[function(require,module,exports){
 module.exports = [
   // type
   require('./Fraction'),
@@ -41339,7 +41377,7 @@ module.exports = [
   require('./function/fraction')
 ];
 
-},{"./Fraction":447,"./function/fraction":448}],450:[function(require,module,exports){
+},{"./Fraction":448,"./function/fraction":449}],451:[function(require,module,exports){
 module.exports = [
   require('./bignumber'),
   require('./boolean'),
@@ -41353,7 +41391,7 @@ module.exports = [
   require('./unit')
 ];
 
-},{"./bignumber":439,"./boolean":440,"./chain":443,"./complex":446,"./fraction":449,"./matrix":462,"./number":477,"./resultset":479,"./string":480,"./unit":485}],451:[function(require,module,exports){
+},{"./bignumber":440,"./boolean":441,"./chain":444,"./complex":447,"./fraction":450,"./matrix":463,"./number":478,"./resultset":480,"./string":481,"./unit":486}],452:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -42235,7 +42273,7 @@ exports.path = 'type';
 exports.factory = factory;
 exports.lazy = false;  // no lazy loading, as we alter type.Matrix._storage
 
-},{"../../error/DimensionError":13,"../../utils/index":507,"./Matrix":454}],452:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../utils/index":508,"./Matrix":455}],453:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -42586,7 +42624,7 @@ exports.name = 'FibonacciHeap';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../function/relational/larger":374,"../../function/relational/smaller":376}],453:[function(require,module,exports){
+},{"../../function/relational/larger":375,"../../function/relational/smaller":377}],454:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -42821,7 +42859,7 @@ exports.name = 'ImmutableDenseMatrix';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../function/relational/smaller":376,"../../utils/index":507,"./DenseMatrix":451}],454:[function(require,module,exports){
+},{"../../function/relational/smaller":377,"../../utils/index":508,"./DenseMatrix":452}],455:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -43089,7 +43127,7 @@ exports.name = 'Matrix';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../utils/index":507}],455:[function(require,module,exports){
+},{"../../utils/index":508}],456:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../utils/object').clone;
@@ -43374,7 +43412,7 @@ exports.name = 'Index';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../utils/number":509,"../../utils/object":510}],456:[function(require,module,exports){
+},{"../../utils/number":510,"../../utils/object":511}],457:[function(require,module,exports){
 'use strict';
 
 var number = require('../../utils/number');
@@ -43692,7 +43730,7 @@ exports.name = 'Range';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../utils/number":509}],457:[function(require,module,exports){
+},{"../../utils/number":510}],458:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load) {
@@ -43835,7 +43873,7 @@ exports.name = 'Spa';
 exports.path = 'type';
 exports.factory = factory;
 
-},{"../../function/arithmetic/add":272,"../../function/relational/equalScalar":372}],458:[function(require,module,exports){
+},{"../../function/arithmetic/add":273,"../../function/relational/equalScalar":373}],459:[function(require,module,exports){
 'use strict';
 
 var util = require('../../utils/index');
@@ -45271,7 +45309,7 @@ exports.path = 'type';
 exports.factory = factory;
 exports.lazy = false;  // no lazy loading, as we alter type.Matrix._storage
 
-},{"../../error/DimensionError":13,"../../function/relational/equalScalar":372,"../../utils/index":507,"./Matrix":454}],459:[function(require,module,exports){
+},{"../../error/DimensionError":14,"../../function/relational/equalScalar":373,"../../utils/index":508,"./Matrix":455}],460:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -45337,7 +45375,7 @@ function factory (type, config, load, typed) {
 exports.name = 'index';
 exports.factory = factory;
 
-},{}],460:[function(require,module,exports){
+},{}],461:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -45427,7 +45465,7 @@ function factory (type, config, load, typed) {
 exports.name = 'matrix';
 exports.factory = factory;
 
-},{}],461:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -45490,7 +45528,7 @@ function factory (type, config, load, typed) {
 exports.name = 'sparse';
 exports.factory = factory;
 
-},{}],462:[function(require,module,exports){
+},{}],463:[function(require,module,exports){
 module.exports = [
   // types
   require('./Matrix'),
@@ -45508,7 +45546,7 @@ module.exports = [
   require('./function/sparse')
 ];
 
-},{"./DenseMatrix":451,"./FibonacciHeap":452,"./ImmutableDenseMatrix":453,"./Matrix":454,"./MatrixIndex":455,"./Range":456,"./Spa":457,"./SparseMatrix":458,"./function/index":459,"./function/matrix":460,"./function/sparse":461}],463:[function(require,module,exports){
+},{"./DenseMatrix":452,"./FibonacciHeap":453,"./ImmutableDenseMatrix":454,"./Matrix":455,"./MatrixIndex":456,"./Range":457,"./Spa":458,"./SparseMatrix":459,"./function/index":460,"./function/matrix":461,"./function/sparse":462}],464:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -45624,7 +45662,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm01';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13}],464:[function(require,module,exports){
+},{"../../../error/DimensionError":14}],465:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -45745,7 +45783,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm02';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372}],465:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373}],466:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -45872,7 +45910,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm03';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13}],466:[function(require,module,exports){
+},{"../../../error/DimensionError":14}],467:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -46061,7 +46099,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm04';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372}],467:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373}],468:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -46239,7 +46277,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm05';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372}],468:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373}],469:[function(require,module,exports){
 'use strict';
 
 var scatter = require('./../../../utils/collection/scatter');
@@ -46404,7 +46442,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm06';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372,"./../../../utils/collection/scatter":504}],469:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373,"./../../../utils/collection/scatter":505}],470:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -46530,7 +46568,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm07';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13}],470:[function(require,module,exports){
+},{"../../../error/DimensionError":14}],471:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -46692,7 +46730,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm08';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372}],471:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373}],472:[function(require,module,exports){
 'use strict';
 
 var DimensionError = require('../../../error/DimensionError');
@@ -46843,7 +46881,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm09';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../function/relational/equalScalar":372}],472:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../function/relational/equalScalar":373}],473:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -46955,7 +46993,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm10';
 exports.factory = factory;
 
-},{}],473:[function(require,module,exports){
+},{}],474:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -47066,7 +47104,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm11';
 exports.factory = factory;
 
-},{"../../../function/relational/equalScalar":372}],474:[function(require,module,exports){
+},{"../../../function/relational/equalScalar":373}],475:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -47178,7 +47216,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm12';
 exports.factory = factory;
 
-},{}],475:[function(require,module,exports){
+},{}],476:[function(require,module,exports){
 'use strict';
 
 var util = require('../../../utils/index');
@@ -47284,7 +47322,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm13';
 exports.factory = factory;
 
-},{"../../../error/DimensionError":13,"../../../utils/index":507}],476:[function(require,module,exports){
+},{"../../../error/DimensionError":14,"../../../utils/index":508}],477:[function(require,module,exports){
 'use strict';
 
 var clone = require('../../../utils/object').clone;
@@ -47368,7 +47406,7 @@ function factory (type, config, load, typed) {
 exports.name = 'algorithm14';
 exports.factory = factory;
 
-},{"../../../utils/object":510}],477:[function(require,module,exports){
+},{"../../../utils/object":511}],478:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('./../utils/collection/deepMap');
@@ -47449,7 +47487,7 @@ function factory (type, config, load, typed) {
 exports.name = 'number';
 exports.factory = factory;
 
-},{"./../utils/collection/deepMap":501}],478:[function(require,module,exports){
+},{"./../utils/collection/deepMap":502}],479:[function(require,module,exports){
 'use strict';
 
 function factory (type, config, load, typed) {
@@ -47522,13 +47560,13 @@ exports.name = 'ResultSet';
 exports.path = 'type';
 exports.factory = factory;
 
-},{}],479:[function(require,module,exports){
+},{}],480:[function(require,module,exports){
 module.exports = [
   // type
   require('./ResultSet')
 ];
 
-},{"./ResultSet":478}],480:[function(require,module,exports){
+},{"./ResultSet":479}],481:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('./../utils/collection/deepMap');
@@ -47599,7 +47637,7 @@ function factory (type, config, load, typed) {
 exports.name = 'string';
 exports.factory = factory;
 
-},{"../utils/number":509,"./../utils/collection/deepMap":501}],481:[function(require,module,exports){
+},{"../utils/number":510,"./../utils/collection/deepMap":502}],482:[function(require,module,exports){
 'use strict';
 
 var endsWith = require('../../utils/string').endsWith;
@@ -50849,7 +50887,7 @@ exports.path = 'type';
 exports.factory = factory;
 exports.math = true; // request access to the math namespace
 
-},{"../../function/arithmetic/abs":271,"../../function/arithmetic/addScalar":273,"../../function/arithmetic/divideScalar":278,"../../function/arithmetic/fix":283,"../../function/arithmetic/multiplyScalar":293,"../../function/arithmetic/pow":296,"../../function/arithmetic/subtract":301,"../../function/relational/equal":371,"../../function/string/format":393,"../../function/utils/isNumeric":429,"../../function/utils/typeof":433,"../../type/complex/Complex":444,"../../type/number":477,"../../utils/bignumber/constants":493,"../../utils/object":510,"../../utils/string":511}],482:[function(require,module,exports){
+},{"../../function/arithmetic/abs":272,"../../function/arithmetic/addScalar":274,"../../function/arithmetic/divideScalar":279,"../../function/arithmetic/fix":284,"../../function/arithmetic/multiplyScalar":294,"../../function/arithmetic/pow":297,"../../function/arithmetic/subtract":302,"../../function/relational/equal":372,"../../function/string/format":394,"../../function/utils/isNumeric":430,"../../function/utils/typeof":434,"../../type/complex/Complex":445,"../../type/number":478,"../../utils/bignumber/constants":494,"../../utils/object":511,"../../utils/string":512}],483:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -50936,7 +50974,7 @@ function factory (type, config, load, typed) {
 exports.name = 'createUnit';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501}],483:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502}],484:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -50975,7 +51013,7 @@ function factory (type, config, load, typed) {
 exports.name = 'splitUnit';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501}],484:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502}],485:[function(require,module,exports){
 'use strict';
 
 var deepMap = require('../../../utils/collection/deepMap');
@@ -51038,7 +51076,7 @@ function factory (type, config, load, typed) {
 exports.name = 'unit';
 exports.factory = factory;
 
-},{"../../../utils/collection/deepMap":501}],485:[function(require,module,exports){
+},{"../../../utils/collection/deepMap":502}],486:[function(require,module,exports){
 module.exports = [
   // type
   require('./Unit'),
@@ -51056,7 +51094,7 @@ module.exports = [
   require('./physicalConstants')
 ];
 
-},{"./Unit":481,"./function/createUnit":482,"./function/splitUnit":483,"./function/unit":484,"./physicalConstants":486}],486:[function(require,module,exports){
+},{"./Unit":482,"./function/createUnit":483,"./function/splitUnit":484,"./function/unit":485,"./physicalConstants":487}],487:[function(require,module,exports){
 var lazy = require('../../utils/object').lazy;
 
 
@@ -51142,7 +51180,7 @@ exports.factory = factory;
 exports.lazy = false;  // no lazy loading of constants, the constants themselves are lazy when needed
 exports.math = true;   // request access to the math namespace
 
-},{"../../utils/object":510}],487:[function(require,module,exports){
+},{"../../utils/object":511}],488:[function(require,module,exports){
 'use strict';
 
 var number = require('./number');
@@ -51570,7 +51608,7 @@ exports.flatten = function(array) {
  */
 exports.isArray = Array.isArray;
 
-},{"../error/DimensionError":13,"../error/IndexError":14,"./number":509,"./object":510,"./string":511,"./types":512}],488:[function(require,module,exports){
+},{"../error/DimensionError":14,"../error/IndexError":15,"./number":510,"./object":511,"./string":512,"./types":513}],489:[function(require,module,exports){
 var bitwise = require('./bitwise');
 
 /**
@@ -51640,7 +51678,7 @@ module.exports = function bitAnd(x, y) {
   return bitwise(x, y, function (a, b) { return a & b });
 };
 
-},{"./bitwise":492}],489:[function(require,module,exports){
+},{"./bitwise":493}],490:[function(require,module,exports){
 /**
  * Bitwise not
  * @param {BigNumber} value
@@ -51663,7 +51701,7 @@ module.exports = function bitNot (x) {
   return x;
 };
 
-},{}],490:[function(require,module,exports){
+},{}],491:[function(require,module,exports){
 var bitwise = require('./bitwise');
 
 /**
@@ -51718,7 +51756,7 @@ module.exports = function bitOr (x, y) {
   return bitwise(x, y, function (a, b) { return a | b });
 };
 
-},{"./bitwise":492}],491:[function(require,module,exports){
+},{"./bitwise":493}],492:[function(require,module,exports){
 var bitwise = require('./bitwise');
 var bitNot = require('./bitNot');
 
@@ -51780,7 +51818,7 @@ module.exports = function bitXor(x, y) {
   return bitwise(x, y, function (a, b) { return a ^ b });
 };
 
-},{"./bitNot":489,"./bitwise":492}],492:[function(require,module,exports){
+},{"./bitNot":490,"./bitwise":493}],493:[function(require,module,exports){
 var bitNot = require('./bitNot');
 
 /**
@@ -51906,7 +51944,7 @@ function decCoefficientToBinaryString (x) {
   return arr.reverse();
 }
 
-},{"./bitNot":489}],493:[function(require,module,exports){
+},{"./bitNot":490}],494:[function(require,module,exports){
 var memoize = require('../function').memoize;
 
 /**
@@ -51957,7 +51995,7 @@ function hasher (args) {
   return args[0].precision;
 }
 
-},{"../function":506}],494:[function(require,module,exports){
+},{"../function":507}],495:[function(require,module,exports){
 /**
  * Convert a BigNumber to a formatted string representation.
  *
@@ -52142,7 +52180,7 @@ exports.toFixed = function (value, precision) {
   // undefined default precision instead of 0.
 };
 
-},{}],495:[function(require,module,exports){
+},{}],496:[function(require,module,exports){
 
 /**
  * Bitwise left shift
@@ -52185,7 +52223,7 @@ module.exports = function leftShift (x, y) {
   return x.times(new BigNumber(2).pow(y));
 };
 
-},{}],496:[function(require,module,exports){
+},{}],497:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52232,7 +52270,7 @@ module.exports = function nearlyEqual(x, y, epsilon) {
   return false;
 };
 
-},{}],497:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 /*
  * Special Cases:
  *   n >> -n =  N
@@ -52281,7 +52319,7 @@ module.exports = function rightArithShift (x, y) {
   return x.div(new BigNumber(2).pow(y)).floor();
 };
 
-},{}],498:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52293,7 +52331,7 @@ exports.isBoolean = function(value) {
   return typeof value == 'boolean';
 };
 
-},{}],499:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 'use strict';
 
 var isCollection = require('./isCollection');
@@ -52313,7 +52351,7 @@ module.exports = function containsCollections (array) {
   return false;
 };
 
-},{"./isCollection":502}],500:[function(require,module,exports){
+},{"./isCollection":503}],501:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52340,7 +52378,7 @@ module.exports = function deepForEach (array, callback) {
   }
 };
 
-},{}],501:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52367,7 +52405,7 @@ module.exports = function deepMap(array, callback, skipZeros) {
   }
 };
 
-},{}],502:[function(require,module,exports){
+},{}],503:[function(require,module,exports){
 'use strict';
 
 /**
@@ -52379,7 +52417,7 @@ module.exports = function isCollection (x) {
   return (Array.isArray(x) || (x && x.isMatrix === true));
 };
 
-},{}],503:[function(require,module,exports){
+},{}],504:[function(require,module,exports){
 'use strict';
 
 var arraySize = require('../array').size;
@@ -52464,7 +52502,7 @@ function _switch(mat){
   return ret;
 }
 
-},{"../../error/IndexError":14,"../array":487}],504:[function(require,module,exports){
+},{"../../error/IndexError":15,"../array":488}],505:[function(require,module,exports){
 'use strict';
 
 module.exports = function scatter(a, j, w, x, u, mark, c, f, inverse, update, value) {
@@ -52530,7 +52568,7 @@ module.exports = function scatter(a, j, w, x, u, mark, c, f, inverse, update, va
   }
 };
 
-},{}],505:[function(require,module,exports){
+},{}],506:[function(require,module,exports){
 var Emitter = require('tiny-emitter');
 
 /**
@@ -52551,7 +52589,7 @@ exports.mixin = function (obj) {
   return obj;
 };
 
-},{"tiny-emitter":515}],506:[function(require,module,exports){
+},{"tiny-emitter":516}],507:[function(require,module,exports){
 // function utils
 
 /*
@@ -52598,7 +52636,7 @@ exports.maxArgumentCount = function (fn) {
       }, -1);
 };
 
-},{}],507:[function(require,module,exports){
+},{}],508:[function(require,module,exports){
 'use strict';
 
 exports.array = require('./array');
@@ -52610,7 +52648,7 @@ exports.string = require('./string');
 exports.types = require('./types');
 exports.emitter = require('./emitter');
 
-},{"./array":487,"./boolean":498,"./emitter":505,"./function":506,"./number":509,"./object":510,"./string":511,"./types":512}],508:[function(require,module,exports){
+},{"./array":488,"./boolean":499,"./emitter":506,"./function":507,"./number":510,"./object":511,"./string":512,"./types":513}],509:[function(require,module,exports){
 'use strict';
 
 exports.symbols = {
@@ -52716,7 +52754,7 @@ exports.toSymbol = function (name, isUnit) {
   return name;
 };
 
-},{}],509:[function(require,module,exports){
+},{}],510:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53224,7 +53262,7 @@ exports.nearlyEqual = function(x, y, epsilon) {
   return false;
 };
 
-},{}],510:[function(require,module,exports){
+},{}],511:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53467,7 +53505,7 @@ exports.isFactory = function (object) {
   return object && typeof object.factory === 'function';
 };
 
-},{}],511:[function(require,module,exports){
+},{}],512:[function(require,module,exports){
 'use strict';
 
 var formatNumber = require('./number').format;
@@ -53612,7 +53650,7 @@ function formatArray (array, options) {
   }
 }
 
-},{"./bignumber/formatter":494,"./number":509}],512:[function(require,module,exports){
+},{"./bignumber/formatter":495,"./number":510}],513:[function(require,module,exports){
 'use strict';
 
 /**
@@ -53668,12 +53706,12 @@ exports.isScalar = function (x) {
   return !((x && x.isMatrix) || Array.isArray(x));
 };
 
-},{}],513:[function(require,module,exports){
+},{}],514:[function(require,module,exports){
 module.exports = '3.11.5';
 // Note: This file is automatically generated when building math.js.
 // Changes made in this file will be overwritten.
 
-},{}],514:[function(require,module,exports){
+},{}],515:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -53850,7 +53888,7 @@ function tostring(a) {
 mixkey(Math.random(), pool);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],515:[function(require,module,exports){
+},{}],516:[function(require,module,exports){
 function E () {
 	// Keep this empty so it's easier to inherit from
   // (via https://github.com/lipsmack from https://github.com/scottcorgan/tiny-emitter/issues/3)
@@ -53918,7 +53956,7 @@ E.prototype = {
 
 module.exports = E;
 
-},{}],516:[function(require,module,exports){
+},{}],517:[function(require,module,exports){
 /**
  * typed-function
  *
@@ -55307,103 +55345,110 @@ module.exports = E;
   return create();
 }));
 
-},{}],517:[function(require,module,exports){
+},{}],518:[function(require,module,exports){
 var math = require('mathjs');
 const RIGHT = 0;
 const LEFT = 1;
-function Player(sprite, mousePosition){
+
+function Player(sprite, mousePos){
     this.sprite = sprite;
-    this.mousePosition = mousePosition;
+    this.mousePos = mousePos; // original mousePosition object
+    this.mousePosition = []; // delayed array of coordinates
 
-    this.turnRight = function(){
-        this.sprite.children[RIGHT].visible = true;
-        this.sprite.children[LEFT].visible = false;
-    };
-    this.turnLeft = function(){
-        this.sprite.children[RIGHT].visible = false;
-        this.sprite.children[LEFT].visible = true;
-    }
-    this.hit = function hitTestRectangle(r2) {
-
-        //Define the variables we'll need to calculate
-        var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
-
-        //hit will determine whether there's a collision
-        hit = false;
-
-        //Find the center points of each sprite
-        this.sprite.centerX = this.sprite.x + this.sprite.width / 2;
-        this.sprite.centerY = this.sprite.y + this.sprite.height / 2;
-        r2.centerX = r2.x + r2.width / 2;
-        r2.centerY = r2.y + r2.height / 2;
-
-        //Find the half-widths and half-heights of each sprite
-        this.sprite.halfWidth = this.sprite.width / 2;
-        this.sprite.halfHeight = this.sprite.height / 2;
-        r2.halfWidth = r2.width / 2;
-        r2.halfHeight = r2.height / 2;
-
-        //Calculate the distance vector between the sprites
-        vx = this.sprite.centerX - r2.centerX;
-        vy = this.sprite.centerY - r2.centerY;
-
-        //Figure out the combined half-widths and half-heights
-        combinedHalfWidths = this.sprite.halfWidth + r2.halfWidth;
-        combinedHalfHeights = this.sprite.halfHeight + r2.halfHeight;
-
-        //Check for a collision on the x axis
-        if (Math.abs(vx) < combinedHalfWidths) {
-
-            //A collision might be occuring. Check for a collision on the y axis
-            if (Math.abs(vy) < combinedHalfHeights) {
-
-                //There's definitely a collision happening
-                hit = true;
-            } else {
-
-                //There's no collision on the y axis
-                hit = false;
-            }
-        } else {
-
-            //There's no collision on the x axis
-            hit = false;
-        }
-
-        //`hit` will be either `true` or `false`
-        return hit;
-    };
-    
     this.turnRight();
 }
 
+
+Player.prototype.turnRight = function(){
+    this.sprite.children[RIGHT].visible = true;
+    this.sprite.children[LEFT].visible = false;
+};
+
+Player.prototype.turnLeft = function(){
+    this.sprite.children[RIGHT].visible = false;
+    this.sprite.children[LEFT].visible = true;
+}
+
+Player.prototype.hit = function hitTestRectangle(r2) {
+    //Define the variables we'll need to calculate
+    var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+
+    //hit will determine whether there's a collision
+    hit = false;
+
+    //Find the center points of each sprite
+    this.sprite.centerX = this.sprite.x + this.sprite.width / 2;
+    this.sprite.centerY = this.sprite.y + this.sprite.height / 2;
+    r2.centerX = r2.x + r2.width / 2;
+    r2.centerY = r2.y + r2.height / 2;
+
+    //Find the half-widths and half-heights of each sprite
+    this.sprite.halfWidth = this.sprite.width / 2;
+    this.sprite.halfHeight = this.sprite.height / 2;
+    r2.halfWidth = r2.width / 2;
+    r2.halfHeight = r2.height / 2;
+
+    //Calculate the distance vector between the sprites
+    vx = this.sprite.centerX - r2.centerX;
+    vy = this.sprite.centerY - r2.centerY;
+
+    //Figure out the combined half-widths and half-heights
+    combinedHalfWidths = this.sprite.halfWidth + r2.halfWidth;
+    combinedHalfHeights = this.sprite.halfHeight + r2.halfHeight;
+
+    //Check for a collision on the x axis
+    if (Math.abs(vx) < combinedHalfWidths) {
+
+        //A collision might be occuring. Check for a collision on the y axis
+        if (Math.abs(vy) < combinedHalfHeights) {
+
+            //There's definitely a collision happening
+            hit = true;
+        } else {
+
+            //There's no collision on the y axis
+            hit = false;
+        }
+    } else {
+
+        //There's no collision on the x axis
+        hit = false;
+    }
+
+    //`hit` will be either `true` or `false`
+    return hit;
+};
+
 Player.prototype.updatePosition= function(){
-    this.sprite.vx= math.max(math.abs(this.mousePosition.x - this.sprite.x) / 60,4);
-    this.sprite.vy= math.max(math.abs(this.mousePosition.y - this.sprite.y) / 60,4);
+    if (this.mousePosition.length >= 5){
+        var curMousePosition = this.mousePosition.shift();
+        this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
+        this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
 
-    console.log(this.mousePosition);
+        if (math.abs(this.sprite.x - curMousePosition.x) <= 3){} // do nothing if x's are essentially the same
+        else if (this.sprite.x < curMousePosition.x){
+            this.sprite.x += this.sprite.vx;
+            this.turnRight();
+        }
+        else if (this.sprite.x > curMousePosition.x){
+            this.sprite.x -= this.sprite.vx;
+            this.turnLeft();
+        }
 
-    if (math.abs(this.sprite.x - this.mousePosition.x) <= 3){} // do nothing if x's are essentially the same
-    else if (this.sprite.x < this.mousePosition.x){
-        this.sprite.x += this.sprite.vx;
-        this.turnRight();
-    }
-    else if (this.sprite.x > this.mousePosition.x){
-        this.sprite.x -= this.sprite.vx;
-        this.turnLeft();
+        if (math.abs(this.sprite.y - curMousePosition.y) <= 3){} // do nothing if y's are essentially the same
+        else if (this.sprite.y < curMousePosition.y){
+            this.sprite.y += this.sprite.vy;
+        }
+        else if (this.sprite.y > curMousePosition.y){
+            this.sprite.y -= this.sprite.vy;
+        }
     }
 
-    if (math.abs(this.sprite.y - this.mousePosition.y) <= 3){} // do nothing if y's are essentially the same
-    else if (this.sprite.y < this.mousePosition.y){
-        this.sprite.y += this.sprite.vy;
-    }
-    else if (this.sprite.y > this.mousePosition.y){
-        this.sprite.y -= this.sprite.vy;
-    }
+    this.mousePosition.push({x: this.mousePos.x, y: this.mousePos.y});
 };
 
 module.exports = Player;
 
 
 
-},{"mathjs":6}]},{},[1]);
+},{"mathjs":7}]},{},[2]);

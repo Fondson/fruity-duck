@@ -8,9 +8,17 @@ var Container = PIXI.Container,
 var duckRightPath = 'images/duck_right.png';
 var duckLeftPath = 'images/duck_left.png';
 var skyPath = 'images/sky.png';
+var pearPath = 'images/pear.png';
+var resources = [
+      duckRightPath,
+      duckLeftPath,
+      skyPath,
+      pearPath
+      ]
 var state;
 
 var Player = require('./player');
+var Fruits = require('./fruits');
 var player;
 var type = "WebGL";
 
@@ -28,7 +36,7 @@ var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
 
 var mousePosition = renderer.plugins.interaction.mouse.global;
 renderer.autoResize = true;
-renderer.backgroundColor = 0x3fbfff;
+renderer.backgroundColor = 0x3FBFFF;
 
 //Add the canvas to the HTML document
 document.body.appendChild(renderer.view);
@@ -38,41 +46,34 @@ var stage = new Container();
 
 // loading sprites
 var duckLeft, duckRight, sky;
+var fruitsArr = [];
+var fruits = new Fruits(fruitsArr);
 var duck = new Container();
-var dummy;
 loader
-  .add([
-      duckRightPath,
-      duckLeftPath,
-      skyPath
-      ])
+  .add(resources)
   .load(function setup() {
-        sky = new Sprite(TextureCache[skyPath]);
-        stage.addChild(sky);
+            sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
+            stage.addChild(sky);
 
-        duckRight = new Sprite(TextureCache[duckRightPath]);
-        duckLeft = new Sprite(TextureCache[duckLeftPath]);
-        duck.addChild(duckRight);
-        duck.addChild(duckLeft);
+            duckRight = new Sprite(TextureCache[duckRightPath]);
+            duckLeft = new Sprite(TextureCache[duckLeftPath]);
+            duck.addChild(duckRight);
+            duck.addChild(duckLeft);
 
-        player = new Player(duck, mousePosition);
-        duck.position.set(100,100);
-        //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
-        stage.addChild(duck);
+            player = new Player(duck, mousePosition);
+            duck.position.set(100,100);
+            //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
+            stage.addChild(duck);
 
-        dummy = new Sprite(TextureCache[duckLeftPath]);
-        dummy.position.set(500,500);
-        stage.addChild(dummy);
+            //Tell the `renderer` to `render` the `stage`
+            renderer.render(stage);
 
-        //Tell the `renderer` to `render` the `stage`
-        renderer.render(stage);
+            renderer.view.width = window.innerWidth;
+            renderer.view.height = window.innerHeight;
+            
+            state = play;
 
-        renderer.view.width = window.innerWidth;
-        renderer.view.height = window.innerHeight;
-        
-        state = play;
-
-        gameLoop();
+            gameLoop();
 });
 
 function gameLoop(){
@@ -83,21 +84,21 @@ function gameLoop(){
     renderer.render(stage);
 };
 
+var fruitCounter = 0;
 function play(){
     console.log(duck.position);
     player.updatePosition();
-    if (player.hit(dummy)){
-        dummy.tint = 0xff3300;
-    }else{
-        dummy.tint = 0xccff99;
+    fruits.updateFruits(player);
+    fruitCounter +=1;
+    if (fruitCounter >= 60){
+        fruitCounter = 0;
+        fruits.add(stage);
     }
 }
 
 window.addEventListener("resize", function(event){
-    sky.x = (window.innerWidth - sky.width) / 2;
-    sky.y = (window.innerHeight - sky.height) / 2;
-    renderer.view.width = window.innerWidth;
-    renderer.view.height = window.innerHeight;
+    renderer.view.style.width = window.innerWidth + 'px';
+    renderer.view.style.height = window.innerHeight + 'px';
 });
 
 
