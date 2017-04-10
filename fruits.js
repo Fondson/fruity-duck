@@ -1,11 +1,16 @@
+var a = require('./alias');
+
 //Aliases
-var Container = PIXI.Container,
-    autoDetectRenderer = PIXI.autoDetectRenderer,
-    loader = PIXI.loader,
-    resources = PIXI.loader.resources,
-    Sprite = PIXI.Sprite,
-    TextureCache = PIXI.utils.TextureCache;
-var pearPath = 'images/pear.png';
+var Container = a.Container,
+    autoDetectRenderer = a.autoDetectRenderer,
+    loader = a.loader,
+    resources = a.resources,
+    Sprite = a.Sprite,
+    TextureCache = a.TextureCache;
+var duckRightPath = a.duckRightPath;
+var duckLeftPath = a.duckLeftPath;
+var skyPath = a.skyPath;
+var pearPath = a.pearPath;
 
 function Fruits(arr){
     this.arr = arr;
@@ -20,9 +25,15 @@ Fruits.prototype.add = function(stage){
 
 Fruits.prototype.updateFruits = function(player){
     for (var i = 0; i < this.arr.length; ++i){
-        this.arr[i].y += 1;
-        if (player.hit(this.arr[i])){
-            this.arr[i].visible = false;
+        var fruit = this.arr[i];
+        fruit.y += 1;
+        if (fruit.y === window.innerHeight){
+            console.log("fruit out of bounds");
+            this.arr.splice(i, 1);
+            --i;
+        }
+        else if (player.hit(fruit)){
+            fruit.visible = false;
             this.arr.splice(i, 1);
             --i;
         }

@@ -1,20 +1,23 @@
+var a = require('./alias');
+
 //Aliases
-var Container = PIXI.Container,
-    autoDetectRenderer = PIXI.autoDetectRenderer,
-    loader = PIXI.loader,
-    resources = PIXI.loader.resources,
-    Sprite = PIXI.Sprite,
-    TextureCache = PIXI.utils.TextureCache;
-var duckRightPath = 'images/duck_right.png';
-var duckLeftPath = 'images/duck_left.png';
-var skyPath = 'images/sky.png';
-var pearPath = 'images/pear.png';
+var Container = a.Container,
+    autoDetectRenderer = a.autoDetectRenderer,
+    loader = a.loader,
+    resources = a.resources,
+    Sprite = a.Sprite,
+    TextureCache = a.TextureCache;
+var duckRightPath = a.duckRightPath;
+var duckLeftPath = a.duckLeftPath;
+var skyPath = a.skyPath;
+var pearPath = a.pearPath;
+
 var resources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
       pearPath
-      ]
+      ];
 var state;
 
 var Player = require('./player');
@@ -86,7 +89,6 @@ function gameLoop(){
 
 var fruitCounter = 0;
 function play(){
-    console.log(duck.position);
     player.updatePosition();
     fruits.updateFruits(player);
     fruitCounter +=1;
