@@ -139,8 +139,8 @@ loader
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
 
-            renderer.view.width = window.innerWidth;
-            renderer.view.height = window.innerHeight;
+            renderer.view.style.width = window.innerWidth + 'px';
+            renderer.view.style.height = window.innerHeight + 'px';
             
             state = play;
 

@@ -25,7 +25,7 @@ function Fruits(gameScene){
 Fruits.prototype.add = function(){
     this.list.push(new Sprite(TextureCache[pearPath]));
     var newFruit = this.list.tail;
-    newFruit.x = random(0, window.innerWidth -  newFruit.width);
+    newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
     newFruit.vy = random(2, velCap);
     if (velCap < 6) velCap += 0.005;
     this.gameScene.addChild(newFruit);

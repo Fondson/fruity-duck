@@ -41,7 +41,7 @@ function Fruits(gameScene){
 Fruits.prototype.add = function(){
     this.list.push(new Sprite(TextureCache[pearPath]));
     var newFruit = this.list.tail;
-    newFruit.x = random(0, window.innerWidth -  newFruit.width);
+    newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
     newFruit.vy = random(2, velCap);
     if (velCap < 6) velCap += 0.005;
     this.gameScene.addChild(newFruit);
@@ -215,8 +215,8 @@ loader
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
 
-            renderer.view.width = window.innerWidth;
-            renderer.view.height = window.innerHeight;
+            renderer.view.style.width = window.innerWidth + 'px';
+            renderer.view.style.height = window.innerHeight + 'px';
             
             state = play;
 
