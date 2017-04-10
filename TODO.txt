@@ -1,5 +1,4 @@
 TODO
 - add toxic fruits
-- host online 
 - test mobile
 - add score 
