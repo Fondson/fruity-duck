@@ -1,4 +1,4 @@
 TODO
 - add toxic fruits
-- test mobile
+- better mobile controls (fix "centerPoint" on touch down and calculate mobileMousePos accordingly, similarily do the same for the duck's position)
 - add score 
