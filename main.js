@@ -6,6 +6,7 @@ var Container = a.Container,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
+    Text = a.Text,
     TextureCache = a.TextureCache;
 var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
@@ -31,6 +32,8 @@ if(!PIXI.utils.isWebGLSupported()){
 
 PIXI.utils.sayHello(type);
 
+// Scale mode for all textures, will retain pixelation
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 //Create the renderer
 var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
@@ -49,24 +52,58 @@ var stage = new Container();
 
 // loading sprites
 var duckLeft, duckRight, sky;
-var fruitsArr = [];
-var fruits = new Fruits(fruitsArr);
 var duck = new Container();
+var gameScene = new Container();
+var gameOverScene = new Container();
+var fruits = new Fruits(gameScene);
 loader
   .add(resources)
   .load(function setup() {
+            // set up gameScene
             sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
-            stage.addChild(sky);
+            gameScene.addChild(sky);
 
             duckRight = new Sprite(TextureCache[duckRightPath]);
             duckLeft = new Sprite(TextureCache[duckLeftPath]);
             duck.addChild(duckRight);
             duck.addChild(duckLeft);
-
-            player = new Player(duck, mousePosition);
             duck.position.set(100,100);
             //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
-            stage.addChild(duck);
+
+            player = new Player(duck, mousePosition);
+            gameScene.addChild(duck);
+
+            stage.addChild(gameScene);
+
+            // set up gameOverScene
+            gameOverScene.visible = false;
+            var loseMessage = new Text(
+                "You lost!",
+                {font: "64px Futura", fill: "black"}
+            );
+            loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
+            loseMessage.y = window.innerHeight / 3;            
+            gameOverScene.addChild(loseMessage);
+
+            var restartMessage = new Text(
+                "Click here to restart",
+                {font: "50px Futura", fill: "black"}
+            );
+            restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
+            restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
+            gameOverScene.addChild(restartMessage);
+            restartMessage.interactive = true;
+            restartMessage.buttonMode = true;
+            restartMessage.on('click', function(){
+                fruitDropDelay = defatulFruitDropDelay;
+                duck.x = mousePosition.x;
+                duck.y = mousePosition.y;
+                state = play;
+                gameOverScene.visible = false;
+                gameScene.visible = true;
+            })
+
+            stage.addChild(gameOverScene);
 
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
@@ -88,14 +125,27 @@ function gameLoop(){
 };
 
 var fruitCounter = 0;
+var defatulFruitDropDelay = 60;
+var fruitDropDelay = defatulFruitDropDelay;
 function play(){
     player.updatePosition();
-    fruits.updateFruits(player);
-    fruitCounter +=1;
-    if (fruitCounter >= 60){
-        fruitCounter = 0;
-        fruits.add(stage);
+    if (fruits.updateFruits(player)){
+        state = end;
     }
+    fruitCounter +=1;
+    if (fruitCounter >= fruitDropDelay){
+        if (fruitDropDelay > 15) {
+            fruitDropDelay -= 1;
+        }
+        fruitCounter = 0;
+        fruits.add();
+    }
+}
+
+function end(){
+    gameScene.visible = false;
+    gameOverScene.visible = true;
+    player.clear();
 }
 
 window.addEventListener("resize", function(event){

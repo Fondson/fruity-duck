@@ -99,6 +99,10 @@ Player.prototype.updatePosition= function(){
     this.mousePosition.push({x: this.mousePos.x, y: this.mousePos.y});
 };
 
+Player.prototype.clear = function(){
+    this.mousePosition = [];
+}
+
 module.exports = Player;
 
 

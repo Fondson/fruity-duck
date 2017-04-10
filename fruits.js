@@ -1,4 +1,5 @@
 var a = require('./alias');
+var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
 
 //Aliases
 var Container = a.Container,
@@ -12,32 +13,43 @@ var duckLeftPath = a.duckLeftPath;
 var skyPath = a.skyPath;
 var pearPath = a.pearPath;
 
-function Fruits(arr){
-    this.arr = arr;
+// defaults
+var defaultVelCap = 4;
+var velCap = 4;
+
+function Fruits(gameScene){
+    this.list = new LinkedList();
+    this.gameScene = gameScene;
 }
 
-Fruits.prototype.add = function(stage){
-    this.arr.push(new Sprite(TextureCache[pearPath]));
-    var newFruit = this.arr[this.arr.length -1];
-    newFruit.x = random(0, window.innerWidth -  20);
-    stage.addChild(newFruit);
+Fruits.prototype.add = function(){
+    this.list.push(new Sprite(TextureCache[pearPath]));
+    var newFruit = this.list.tail;
+    newFruit.x = random(0, window.innerWidth -  newFruit.width);
+    newFruit.vy = random(2, velCap);
+    if (velCap < 6) velCap += 0.005;
+    this.gameScene.addChild(newFruit);
 }
 
 Fruits.prototype.updateFruits = function(player){
-    for (var i = 0; i < this.arr.length; ++i){
-        var fruit = this.arr[i];
-        fruit.y += 1;
-        if (fruit.y === window.innerHeight){
-            console.log("fruit out of bounds");
-            this.arr.splice(i, 1);
-            --i;
+    this.list.resetCursor();
+    while(this.list.next()){
+        var fruit = this.list.current;
+        fruit.y += fruit.vy;
+        if (fruit.y >= window.innerHeight){
+            while(this.list.length){
+                var fruit = this.list.shift();
+                this.gameScene.removeChild(fruit);
+            }
+            velCap = defaultVelCap;
+            return true;
         }
         else if (player.hit(fruit)){
             fruit.visible = false;
-            this.arr.splice(i, 1);
-            --i;
+            this.list.removeCurrent();
         }
     }
+    return false;
 }
 
 function random(min, max){

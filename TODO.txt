@@ -1,0 +1,5 @@
+TODO
+- add tocix fruits
+- host online 
+- test mobile
+- add score 

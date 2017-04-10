@@ -6,6 +6,7 @@ module.exports = {
     resources: PIXI.loader.resources,
     Sprite: PIXI.Sprite,
     TextureCache: PIXI.utils.TextureCache,
+    Text: PIXI.Text,
     pearPath: 'images/pear.png',
     duckRightPath: 'images/duck_right.png',
     duckLeftPath: 'images/duck_left.png',
