@@ -52,7 +52,7 @@ var Fruits = {
         this.list.push(new Sprite(TextureCache[path]));
         var newFruit = this.list.tail;
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
-        newFruit.vy = random(2, this.velCap);
+        newFruit.vy = random(1, this.velCap);
         if (this.velCap < 6) this.velCap += 0.005;
         this.gameScene.addChild(newFruit);
     },
