@@ -16,7 +16,7 @@ var skyPath = a.skyPath;
 var pearPath = a.pearPath;
 
 var Poison = {
-    appearanceRate: 90, // out of 100
+    appearanceRate: 30, // out of 100
     instance: null,
     create: function(gameScene){
         var instance = Fruits.create(gameScene);
