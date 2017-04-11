@@ -87,7 +87,7 @@ var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
 
 var mousePosition = renderer.plugins.interaction.mouse.global;
 renderer.autoResize = true;
-renderer.backgroundColor = 0x3FBFFF;
+renderer.backgroundColor = 0x000000;
 
 //Add the canvas to the HTML document
 document.body.appendChild(renderer.view);
@@ -127,7 +127,7 @@ loader
             gameOverScene.visible = false;
             var loseMessage = new Text(
                 "You lost!",
-                {font: "64px Futura", fill: "black"}
+                {font: "64px Futura", fill: "white"}
             );
             loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
             loseMessage.y = window.innerHeight / 3;            
@@ -135,7 +135,7 @@ loader
 
             var restartMessage = new Text(
                 "Click to restart",
-                {font: "50px Futura", fill: "black"}
+                {font: "50px Futura", fill: "white"}
             );
             restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
             restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
