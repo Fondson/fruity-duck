@@ -21,8 +21,8 @@ var Poison = {
     create: function(gameScene){
         var super_ = Fruits.create(gameScene);
         this.super_ = super_;
-        this.super_.reachedEnd = this.reachedEnd;
-        this.super_.hitPlayer = this.hitPlayer;
+        [this.super_.reachedEnd, this.super_.hitPlayer] = 
+            [this.super_.hitPlayer, this.super_.reachedEnd];
         return this;
     },
     add: function(path){
@@ -33,15 +33,6 @@ var Poison = {
     },
     update: function(player){
         return this.super_.update(player);
-    },
-    reachedEnd: function(fruit, funcArgs){
-        fruit.visible = false;
-        this.list.removeCurrent();
-        funcArgs.returnVal = false;
-    },
-    hitPlayer: function(fruits, funcArgs){
-        funcArgs.done = true;
-        funcArgs.returnVal = true;
     },
     clear: function(){
         this.super_.clear();
