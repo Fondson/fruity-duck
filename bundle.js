@@ -55835,8 +55835,10 @@ var Poison = {
     create: function(gameScene){
         var super_ = Fruits.create(gameScene);
         this.super_ = super_;
+        // swap
         [this.super_.reachedEnd, this.super_.hitPlayer] = 
             [this.super_.hitPlayer, this.super_.reachedEnd];
+        Object.setPrototypeOf(this, super_);
         return this;
     },
     add: function(path){
@@ -55844,12 +55846,6 @@ var Poison = {
         if (rand <= this.appearanceRate){
             this.super_.add(path);
         }
-    },
-    update: function(player){
-        return this.super_.update(player);
-    },
-    clear: function(){
-        this.super_.clear();
     }
 }
 
