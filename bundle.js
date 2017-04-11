@@ -21,7 +21,7 @@ var isMobile = function() {
   return check;
 }();
 
-module.exports = isMobile;
+module.exports = !isMobile;
 },{}],3:[function(require,module,exports){
 var a = require('./alias');
 var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
@@ -192,7 +192,11 @@ loader
             duckLeft = new Sprite(TextureCache[duckLeftPath]);
             duck.addChild(duckRight);
             duck.addChild(duckLeft);
-            duck.position.set(100,100);
+            if (isMobile) {
+              duck.position.set((window.innerWidth - duck.width) / 2, 
+                window.innerHeight - duck.height - 20);
+            }
+            else duck.position.set(mousePosition.x, mousePosition.y);
             duck.interactive = true;
             duck.on('pointermove', function(){
                 duck.x
@@ -264,13 +268,12 @@ function play(){
 function end(){
     gameScene.visible = false;
     gameOverScene.visible = true;
+
     player.clear();
 }
 
 function reset(){
     fruitDropDelay = defatulFruitDropDelay;
-    duck.x = mousePosition.x;
-    duck.y = mousePosition.y;
     state = play;
     gameOverScene.visible = false;
     gameScene.visible = true;
@@ -55661,6 +55664,8 @@ module.exports = E;
 
 },{}],521:[function(require,module,exports){
 var math = require('mathjs');
+var isMobile = require('./detectMobile');
+
 const RIGHT = 0;
 const LEFT = 1;
 
@@ -55779,10 +55784,17 @@ Player.prototype.updatePosition= function(){
 
 Player.prototype.clear = function(){
     this.mousePosition = [];
+    // reset player position
+    if (isMobile){
+        this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 
+                window.innerHeight - this.sprite.height - 20);
+    }else{
+        this.sprite.position.set(this.mousePos.x, this.mousePos.y);
+    }
 }
 
 module.exports = Player;
 
 
 
-},{"mathjs":10}]},{},[4]);
+},{"./detectMobile":2,"mathjs":10}]},{},[4]);

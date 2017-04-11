@@ -107,7 +107,11 @@ loader
             duckLeft = new Sprite(TextureCache[duckLeftPath]);
             duck.addChild(duckRight);
             duck.addChild(duckLeft);
-            duck.position.set(100,100);
+            if (isMobile) {
+              duck.position.set((window.innerWidth - duck.width) / 2, 
+                window.innerHeight - duck.height - 20);
+            }
+            else duck.position.set(mousePosition.x, mousePosition.y);
             duck.interactive = true;
             duck.on('pointermove', function(){
                 duck.x
@@ -179,13 +183,12 @@ function play(){
 function end(){
     gameScene.visible = false;
     gameOverScene.visible = true;
+
     player.clear();
 }
 
 function reset(){
     fruitDropDelay = defatulFruitDropDelay;
-    duck.x = mousePosition.x;
-    duck.y = mousePosition.y;
     state = play;
     gameOverScene.visible = false;
     gameScene.visible = true;

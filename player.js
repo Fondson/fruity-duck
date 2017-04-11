@@ -1,4 +1,6 @@
 var math = require('mathjs');
+var isMobile = require('./detectMobile');
+
 const RIGHT = 0;
 const LEFT = 1;
 
@@ -117,6 +119,13 @@ Player.prototype.updatePosition= function(){
 
 Player.prototype.clear = function(){
     this.mousePosition = [];
+    // reset player position
+    if (isMobile){
+        this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 
+                window.innerHeight - this.sprite.height - 20);
+    }else{
+        this.sprite.position.set(this.mousePos.x, this.mousePos.y);
+    }
 }
 
 module.exports = Player;
