@@ -21,12 +21,20 @@ var resources = [
       ];
 var state;
 
-// detect mobile
 var isMobile = require('./detectMobile');
 var Player = require('./player');
 var Fruits = require('./fruits');
 var player;
 var type = "WebGL";
+
+var duckLeft, duckRight, sky;
+var duck = new Container();
+var gameScene = new Container();
+var gameOverScene = new Container();
+var fruits = new Fruits(gameScene);
+
+var mobileMousePos = { x: -1, y: -1 };
+var touchCenter;
 
 if(!PIXI.utils.isWebGLSupported()){
     type = "canvas";
@@ -37,25 +45,40 @@ PIXI.utils.sayHello(type);
 // Scale mode for all textures, will retain pixelation
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-var mobileMousePos = { x: -1, y: -1 };
+if (isMobile){
+    document.addEventListener("touchstart", onTouchStart, true);
+    //document.addEventListener("touchend", onTouchEnd, true);  
+    document.addEventListener("touchmove", onTouchMove, true);
 
-document.addEventListener("touchstart", onTouchStart, true);  
-//document.addEventListener("touchend", onTouchEnd, true);  
-document.addEventListener("touchmove", onTouchMove, true);
-
-function onTouchStart(event){  
-    mobileMousePos.x = event.touches[0].clientX;  
-    mobileMousePos.y = event.touches[0].clientY;
+    function onTouchStart(event){  
+        if (state === play){
+            mobileMousePos.x = event.touches[0].clientX;  
+            mobileMousePos.y = event.touches[0].clientY;
+            touchCenter = {x: mobileMousePos.x, y: mobileMousePos.y};
+            player.centerPos = {x: player.sprite.x, y: player.sprite.y};
+        }
+        else if (state === end){
+            reset();
+        }
+    }
+    function onTouchMove(event){  
+        mobileMousePos.x = event.touches[0].clientX;  
+        mobileMousePos.y = event.touches[0].clientY;
+        player.updatePositionMobile(touchCenter, {x: mobileMousePos.x, y: mobileMousePos.y});
+        //console.log(event.touches[0].clientX);
+    }
+    // function onTouchEnd(event){  
+    //     mobileMousePos.x = event.touches[0].clientX;  
+    //     mobileMousePos.y = event.touches[0].clientY;
+    // }
+}else{
+    document.addEventListener("click", onClick, true);
+    function onClick(event){  
+        if (state === end){
+            reset();
+        }
+    }
 }
-function onTouchMove(event){  
-    mobileMousePos.x = event.touches[0].clientX;  
-    mobileMousePos.y = event.touches[0].clientY;
-    console.log(event.touches[0].clientX);
-}
-// function onTouchEnd(event){  
-//     mobileMousePos.x = event.touches[0].clientX;  
-//     mobileMousePos.y = event.touches[0].clientY;
-// }
 
 //Create the renderer
 var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
@@ -73,11 +96,6 @@ document.body.appendChild(renderer.view);
 var stage = new Container();
 
 // loading sprites
-var duckLeft, duckRight, sky;
-var duck = new Container();
-var gameScene = new Container();
-var gameOverScene = new Container();
-var fruits = new Fruits(gameScene);
 loader
   .add(resources)
   .load(function setup() {
@@ -112,22 +130,12 @@ loader
             gameOverScene.addChild(loseMessage);
 
             var restartMessage = new Text(
-                "Click here to restart",
+                "Click to restart",
                 {font: "50px Futura", fill: "black"}
             );
             restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
             restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
             gameOverScene.addChild(restartMessage);
-            restartMessage.interactive = true;
-            restartMessage.buttonMode = true;
-            restartMessage.on('pointerdown', function(){
-                fruitDropDelay = defatulFruitDropDelay;
-                duck.x = mousePosition.x;
-                duck.y = mousePosition.y;
-                state = play;
-                gameOverScene.visible = false;
-                gameScene.visible = true;
-            })
 
             stage.addChild(gameOverScene);
 
@@ -154,7 +162,7 @@ var fruitCounter = 0;
 var defatulFruitDropDelay = 60;
 var fruitDropDelay = defatulFruitDropDelay;
 function play(){
-    player.updatePosition();
+    if (!isMobile) player.updatePosition();
     if (fruits.updateFruits(player)){
         state = end;
     }
@@ -172,6 +180,15 @@ function end(){
     gameScene.visible = false;
     gameOverScene.visible = true;
     player.clear();
+}
+
+function reset(){
+    fruitDropDelay = defatulFruitDropDelay;
+    duck.x = mousePosition.x;
+    duck.y = mousePosition.y;
+    state = play;
+    gameOverScene.visible = false;
+    gameScene.visible = true;
 }
 
 window.addEventListener("resize", function(event){

@@ -6,6 +6,7 @@ function Player(sprite, mousePos){
     this.sprite = sprite;
     this.mousePos = mousePos; // original mousePosition object
     this.mousePosition = []; // delayed array of coordinates
+    this.centerPos = { x: sprite.x, y: sprite.y}; // used in mobile positioning
 
     this.turnRight();
 }
@@ -70,6 +71,21 @@ Player.prototype.hit = function hitTestRectangle(r2) {
     //`hit` will be either `true` or `false`
     return hit;
 };
+
+Player.prototype.updatePositionMobile = function(centerMousePos, curMousePos){
+    var globalDiffX = curMousePos.x - centerMousePos.x;
+    var globalDiffY = curMousePos.y - centerMousePos.y;
+    var newX = this.centerPos.x + globalDiffX;
+    var newY = this.centerPos.y + globalDiffY;
+    if (math.abs(newX - this.sprite.x) < 3){}
+    else if (newX < this.sprite.x){
+        this.turnLeft();
+    }else{
+        this.turnRight();
+    }
+    this.sprite.x = newX;
+    this.sprite.y = newY;
+}
 
 Player.prototype.updatePosition= function(){
     if (this.mousePosition.length >= 5){
