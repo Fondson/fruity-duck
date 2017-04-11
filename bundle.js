@@ -21,7 +21,7 @@ var isMobile = function() {
   return check;
 }();
 
-module.exports = !isMobile;
+module.exports = isMobile;
 },{}],3:[function(require,module,exports){
 var a = require('./alias');
 var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
