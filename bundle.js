@@ -55831,22 +55831,22 @@ var pearPath = a.pearPath;
 
 var Poison = {
     appearanceRate: 30, // out of 100
-    instance: null,
+    super_: null,
     create: function(gameScene){
-        var instance = Fruits.create(gameScene);
-        this.instance = instance;
-        this.instance.reachedEnd = this.reachedEnd;
-        this.instance.hitPlayer = this.hitPlayer;
+        var super_ = Fruits.create(gameScene);
+        this.super_ = super_;
+        this.super_.reachedEnd = this.reachedEnd;
+        this.super_.hitPlayer = this.hitPlayer;
         return this;
     },
     add: function(path){
         var rand = random(0,100);
         if (rand <= this.appearanceRate){
-            this.instance.add(path);
+            this.super_.add(path);
         }
     },
     update: function(player){
-        return this.instance.update(player);
+        return this.super_.update(player);
     },
     reachedEnd: function(fruit, funcArgs){
         fruit.visible = false;
@@ -55858,7 +55858,7 @@ var Poison = {
         funcArgs.returnVal = true;
     },
     clear: function(){
-        this.instance.clear();
+        this.super_.clear();
     }
 }
 
