@@ -11,7 +11,8 @@ module.exports = {
     pearPath: 'images/pear.png',
     duckRightPath: 'images/duck_right.png',
     duckLeftPath: 'images/duck_left.png',
-    skyPath: 'images/sky.png'
+    skyPath: 'images/sky.png',
+    poisonApplePath: 'images/poison_apple.png'
 };
 },{}],2:[function(require,module,exports){
 // detect mobile
@@ -24,7 +25,8 @@ var isMobile = function() {
 module.exports = isMobile;
 },{}],3:[function(require,module,exports){
 var a = require('./alias');
-var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
+var LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
+var random = require('./random');
 
 //Aliases
 var Container = a.Container,
@@ -35,54 +37,60 @@ var Container = a.Container,
     TextureCache = a.TextureCache;
 var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
 
-// defaults
-var defaultVelCap = 4;
-var velCap = 4;
-
-function Fruits(gameScene){
-    this.list = new LinkedList();
-    this.gameScene = gameScene;
-}
-
-Fruits.prototype.add = function(){
-    this.list.push(new Sprite(TextureCache[pearPath]));
-    var newFruit = this.list.tail;
-    newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
-    newFruit.vy = random(2, velCap);
-    if (velCap < 6) velCap += 0.005;
-    this.gameScene.addChild(newFruit);
-}
-
-Fruits.prototype.updateFruits = function(player){
-    this.list.resetCursor();
-    while(this.list.next()){
-        var fruit = this.list.current;
-        fruit.y += fruit.vy;
-        if (fruit.y >= window.innerHeight){
-            while(this.list.length){
-                var fruit = this.list.shift();
-                this.gameScene.removeChild(fruit);
+var Fruits = {
+    create: function(gameScene){
+        var instance = Object.create(this);
+        instance.gameScene = gameScene;
+        // defaults
+        instance.defaultVelCap = 4;
+        instance.velCap = 4;
+        instance.list = new LinkedList();
+        return instance;
+    },
+    add: function(path){
+        this.list.push(new Sprite(TextureCache[path]));
+        var newFruit = this.list.tail;
+        newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
+        newFruit.vy = random(2, this.velCap);
+        if (this.velCap < 6) this.velCap += 0.005;
+        this.gameScene.addChild(newFruit);
+    },
+    update: function(player){
+        this.list.resetCursor();
+        var funcArgs = {done: false, returnVal: false};
+        while(this.list.next() && !funcArgs.done){
+            var fruit = this.list.current;
+            fruit.y += fruit.vy;
+            if (fruit.y >= window.innerHeight){
+                this.reachedEnd(fruit, funcArgs);
             }
-            velCap = defaultVelCap;
-            return true;
+            else if (player.hit(fruit)){
+                this.hitPlayer(fruit, funcArgs);
+            }
         }
-        else if (player.hit(fruit)){
-            fruit.visible = false;
-            this.list.removeCurrent();
+        return funcArgs.returnVal;
+    },
+    reachedEnd: function(fruit, funcArgs){
+        funcArgs.done = true;
+        funcArgs.returnVal = true;
+    },
+    hitPlayer: function(fruit, funcArgs){
+        fruit.visible = false;
+        this.list.removeCurrent();
+        funcArgs.returnVal = false;
+    },
+    clear: function(){
+        while(this.list.length){
+            var curFruit = this.list.shift();
+            this.gameScene.removeChild(curFruit);
         }
+        this.velCap = this.defaultVelCap;
     }
-    return false;
-}
-
-function random(min, max){
-    return Math.random() * (max - min) + min;
 }
 
 module.exports = Fruits;
-},{"./alias":1,"./node_modules/linkedlist/lib/linkedlist":8}],4:[function(require,module,exports){
+},{"./alias":1,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523}],4:[function(require,module,exports){
 var a = require('./alias');
 
 //Aliases
@@ -97,18 +105,21 @@ var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
 var skyPath = a.skyPath;
 var pearPath = a.pearPath;
+var poisonApplePath = a.poisonApplePath;
 
 var resources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
-      pearPath
+      pearPath,
+      poisonApplePath
       ];
 var state;
 
 var isMobile = require('./detectMobile');
 var Player = require('./player');
 var Fruits = require('./fruits');
+var Poison = require('./poison');
 var player;
 var type = "WebGL";
 
@@ -116,7 +127,8 @@ var duckLeft, duckRight, sky;
 var duck = new Container();
 var gameScene = new Container();
 var gameOverScene = new Container();
-var fruits = new Fruits(gameScene);
+var fruits = Fruits.create(gameScene);
+var poison = Poison.create(gameScene);
 
 var mobileMousePos = { x: -1, y: -1 };
 var touchCenter;
@@ -130,6 +142,7 @@ PIXI.utils.sayHello(type);
 // Scale mode for all textures, will retain pixelation
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
+// set up document listeners
 if (isMobile){
     document.addEventListener("touchstart", onTouchStart, true);
     //document.addEventListener("touchend", onTouchEnd, true);  
@@ -203,7 +216,7 @@ loader
             });
             //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
 
-            player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
+            player = isMobile? Player.create(duck, mobileMousePos): Player.create(duck, mousePosition);
             gameScene.addChild(duck);
 
             stage.addChild(gameScene);
@@ -239,6 +252,7 @@ loader
             gameLoop();
 });
 
+// main game loop
 function gameLoop(){
     requestAnimationFrame(gameLoop);
 
@@ -252,7 +266,7 @@ var defatulFruitDropDelay = 60;
 var fruitDropDelay = defatulFruitDropDelay;
 function play(){
     if (!isMobile) player.updatePosition();
-    if (fruits.updateFruits(player)){
+    if (fruits.update(player) || poison.update(player)){
         state = end;
     }
     fruitCounter +=1;
@@ -261,7 +275,8 @@ function play(){
             fruitDropDelay -= 1;
         }
         fruitCounter = 0;
-        fruits.add();
+        fruits.add(pearPath);
+        poison.add(poisonApplePath);
     }
 }
 
@@ -270,6 +285,8 @@ function end(){
     gameOverScene.visible = true;
 
     player.clear();
+    fruits.clear();
+    poison.clear();
 }
 
 function reset(){
@@ -286,7 +303,7 @@ window.addEventListener("resize", function(event){
 
 
 
-},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521}],5:[function(require,module,exports){
+},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521,"./poison":522}],5:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.1 11/02/2016
  *
@@ -55668,133 +55685,186 @@ var isMobile = require('./detectMobile');
 
 const RIGHT = 0;
 const LEFT = 1;
+var Player = {
+    mousePosition: [], // delayed array of coordinates
+    create: function(sprite, mousePos){
+        var instance = Object.create(this);
+        instance.sprite = sprite;
+        instance.mousePos = mousePos; // original mousePosition obj
+        instance.centerPos = { x: sprite.x,
+            y: sprite.y} // used in mobile positioning
+        instance.turnRight();
+        return instance;
+    },
+    turnRight: function(){
+        this.sprite.children[RIGHT].visible = true;
+        this.sprite.children[LEFT].visible = false;
+    },
+    turnLeft: function(){
+        this.sprite.children[RIGHT].visible = false;
+        this.sprite.children[LEFT].visible = true;
+    },
+    hit: function hitTestRectangle(r2) {
+        //Define the variables we'll need to calculate
+        var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
-function Player(sprite, mousePos){
-    this.sprite = sprite;
-    this.mousePos = mousePos; // original mousePosition object
-    this.mousePosition = []; // delayed array of coordinates
-    this.centerPos = { x: sprite.x, y: sprite.y}; // used in mobile positioning
+        //hit will determine whether there's a collision
+        hit = false;
 
-    this.turnRight();
-}
+        //Find the center points of each sprite
+        this.sprite.centerX = this.sprite.x + this.sprite.width / 2;
+        this.sprite.centerY = this.sprite.y + this.sprite.height / 2;
+        r2.centerX = r2.x + r2.width / 2;
+        r2.centerY = r2.y + r2.height / 2;
 
+        //Find the half-widths and half-heights of each sprite
+        this.sprite.halfWidth = this.sprite.width / 2;
+        this.sprite.halfHeight = this.sprite.height / 2;
+        r2.halfWidth = r2.width / 2;
+        r2.halfHeight = r2.height / 2;
 
-Player.prototype.turnRight = function(){
-    this.sprite.children[RIGHT].visible = true;
-    this.sprite.children[LEFT].visible = false;
-};
+        //Calculate the distance vector between the sprites
+        vx = this.sprite.centerX - r2.centerX;
+        vy = this.sprite.centerY - r2.centerY;
 
-Player.prototype.turnLeft = function(){
-    this.sprite.children[RIGHT].visible = false;
-    this.sprite.children[LEFT].visible = true;
-}
+        //Figure out the combined half-widths and half-heights
+        combinedHalfWidths = this.sprite.halfWidth + r2.halfWidth;
+        combinedHalfHeights = this.sprite.halfHeight + r2.halfHeight;
 
-Player.prototype.hit = function hitTestRectangle(r2) {
-    //Define the variables we'll need to calculate
-    var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+        //Check for a collision on the x axis
+        if (Math.abs(vx) < combinedHalfWidths) {
 
-    //hit will determine whether there's a collision
-    hit = false;
+            //A collision might be occuring. Check for a collision on the y axis
+            if (Math.abs(vy) < combinedHalfHeights) {
 
-    //Find the center points of each sprite
-    this.sprite.centerX = this.sprite.x + this.sprite.width / 2;
-    this.sprite.centerY = this.sprite.y + this.sprite.height / 2;
-    r2.centerX = r2.x + r2.width / 2;
-    r2.centerY = r2.y + r2.height / 2;
+                //There's definitely a collision happening
+                hit = true;
+            } else {
 
-    //Find the half-widths and half-heights of each sprite
-    this.sprite.halfWidth = this.sprite.width / 2;
-    this.sprite.halfHeight = this.sprite.height / 2;
-    r2.halfWidth = r2.width / 2;
-    r2.halfHeight = r2.height / 2;
-
-    //Calculate the distance vector between the sprites
-    vx = this.sprite.centerX - r2.centerX;
-    vy = this.sprite.centerY - r2.centerY;
-
-    //Figure out the combined half-widths and half-heights
-    combinedHalfWidths = this.sprite.halfWidth + r2.halfWidth;
-    combinedHalfHeights = this.sprite.halfHeight + r2.halfHeight;
-
-    //Check for a collision on the x axis
-    if (Math.abs(vx) < combinedHalfWidths) {
-
-        //A collision might be occuring. Check for a collision on the y axis
-        if (Math.abs(vy) < combinedHalfHeights) {
-
-            //There's definitely a collision happening
-            hit = true;
+                //There's no collision on the y axis
+                hit = false;
+            }
         } else {
 
-            //There's no collision on the y axis
+            //There's no collision on the x axis
             hit = false;
         }
-    } else {
 
-        //There's no collision on the x axis
-        hit = false;
-    }
-
-    //`hit` will be either `true` or `false`
-    return hit;
-};
-
-Player.prototype.updatePositionMobile = function(centerMousePos, curMousePos){
-    var globalDiffX = curMousePos.x - centerMousePos.x;
-    var globalDiffY = curMousePos.y - centerMousePos.y;
-    var newX = this.centerPos.x + globalDiffX;
-    var newY = this.centerPos.y + globalDiffY;
-    if (math.abs(newX - this.sprite.x) < 3){}
-    else if (newX < this.sprite.x){
-        this.turnLeft();
-    }else{
-        this.turnRight();
-    }
-    this.sprite.x = newX;
-    this.sprite.y = newY;
-}
-
-Player.prototype.updatePosition= function(){
-    if (this.mousePosition.length >= 5){
-        var curMousePosition = this.mousePosition.shift();
-        this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
-        this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
-
-        if (math.abs(this.sprite.x - curMousePosition.x) <= 3){} // do nothing if x's are essentially the same
-        else if (this.sprite.x < curMousePosition.x){
-            this.sprite.x += this.sprite.vx;
+        //`hit` will be either `true` or `false`
+        return hit;
+    },
+    updatePositionMobile: function(centerMousePos, curMousePos){
+        var globalDiffX = curMousePos.x - centerMousePos.x;
+        var globalDiffY = curMousePos.y - centerMousePos.y;
+        var newX = this.centerPos.x + globalDiffX;
+        var newY = this.centerPos.y + globalDiffY;
+        if (math.abs(newX - this.sprite.x) < 3){}
+        else if (newX < this.sprite.x){
+            this.turnLeft();
+        }else{
             this.turnRight();
         }
-        else if (this.sprite.x > curMousePosition.x){
-            this.sprite.x -= this.sprite.vx;
-            this.turnLeft();
+        this.sprite.x = newX;
+        this.sprite.y = newY;
+    },
+    updatePosition: function(){
+        if (this.mousePosition.length >= 5){
+            var curMousePosition = this.mousePosition.shift();
+            this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
+            this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
+
+            if (math.abs(this.sprite.x - curMousePosition.x) <= 3){} // do nothing if x's are essentially the same
+            else if (this.sprite.x < curMousePosition.x){
+                this.sprite.x += this.sprite.vx;
+                this.turnRight();
+            }
+            else if (this.sprite.x > curMousePosition.x){
+                this.sprite.x -= this.sprite.vx;
+                this.turnLeft();
+            }
+
+            if (math.abs(this.sprite.y - curMousePosition.y) <= 3){} // do nothing if y's are essentially the same
+            else if (this.sprite.y < curMousePosition.y){
+                this.sprite.y += this.sprite.vy;
+            }
+            else if (this.sprite.y > curMousePosition.y){
+                this.sprite.y -= this.sprite.vy;
+            }
         }
 
-        if (math.abs(this.sprite.y - curMousePosition.y) <= 3){} // do nothing if y's are essentially the same
-        else if (this.sprite.y < curMousePosition.y){
-            this.sprite.y += this.sprite.vy;
-        }
-        else if (this.sprite.y > curMousePosition.y){
-            this.sprite.y -= this.sprite.vy;
+        this.mousePosition.push({x: this.mousePos.x, y: this.mousePos.y});
+    },
+    clear: function(){
+        this.mousePosition = [];
+        // reset player position
+        if (isMobile){
+            this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 
+                    window.innerHeight - this.sprite.height - 20);
+        }else{
+            this.sprite.position.set(this.mousePos.x, this.mousePos.y);
         }
     }
 
-    this.mousePosition.push({x: this.mousePos.x, y: this.mousePos.y});
-};
-
-Player.prototype.clear = function(){
-    this.mousePosition = [];
-    // reset player position
-    if (isMobile){
-        this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 
-                window.innerHeight - this.sprite.height - 20);
-    }else{
-        this.sprite.position.set(this.mousePos.x, this.mousePos.y);
-    }
 }
 
 module.exports = Player;
 
 
 
-},{"./detectMobile":2,"mathjs":10}]},{},[4]);
+},{"./detectMobile":2,"mathjs":10}],522:[function(require,module,exports){
+var a = require('./alias');
+var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
+var Fruits = require('./fruits');
+var random = require('./random');
+
+//Aliases
+var Container = a.Container,
+    autoDetectRenderer = a.autoDetectRenderer,
+    loader = a.loader,
+    resources = a.resources,
+    Sprite = a.Sprite,
+    TextureCache = a.TextureCache;
+var duckRightPath = a.duckRightPath;
+var duckLeftPath = a.duckLeftPath;
+var skyPath = a.skyPath;
+var pearPath = a.pearPath;
+
+var Poison = {
+    appearanceRate: 90, // out of 100
+    instance: null,
+    create: function(gameScene){
+        var instance = Fruits.create(gameScene);
+        this.instance = instance;
+        this.instance.reachedEnd = this.reachedEnd;
+        this.instance.hitPlayer = this.hitPlayer;
+        return this;
+    },
+    add: function(path){
+        var rand = random(0,100);
+        if (rand <= this.appearanceRate){
+            this.instance.add(path);
+        }
+    },
+    update: function(player){
+        return this.instance.update(player);
+    },
+    reachedEnd: function(fruit, funcArgs){
+        fruit.visible = false;
+        this.list.removeCurrent();
+        funcArgs.returnVal = false;
+    },
+    hitPlayer: function(fruits, funcArgs){
+        funcArgs.done = true;
+        funcArgs.returnVal = true;
+    },
+    clear: function(){
+        this.instance.clear();
+    }
+}
+
+module.exports = Poison;
+},{"./alias":1,"./fruits":3,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523}],523:[function(require,module,exports){
+module.exports = function random(min, max){
+    return Math.random() * (max - min) + min;
+}
+},{}]},{},[4]);

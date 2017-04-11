@@ -1,5 +1,6 @@
 var a = require('./alias');
-var LinkedList = require('./node_modules/linkedlist/lib/linkedlist')
+var LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
+var random = require('./random');
 
 //Aliases
 var Container = a.Container,
@@ -10,50 +11,56 @@ var Container = a.Container,
     TextureCache = a.TextureCache;
 var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
 
-// defaults
-var defaultVelCap = 4;
-var velCap = 4;
-
-function Fruits(gameScene){
-    this.list = new LinkedList();
-    this.gameScene = gameScene;
-}
-
-Fruits.prototype.add = function(){
-    this.list.push(new Sprite(TextureCache[pearPath]));
-    var newFruit = this.list.tail;
-    newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
-    newFruit.vy = random(2, velCap);
-    if (velCap < 6) velCap += 0.005;
-    this.gameScene.addChild(newFruit);
-}
-
-Fruits.prototype.updateFruits = function(player){
-    this.list.resetCursor();
-    while(this.list.next()){
-        var fruit = this.list.current;
-        fruit.y += fruit.vy;
-        if (fruit.y >= window.innerHeight){
-            while(this.list.length){
-                var fruit = this.list.shift();
-                this.gameScene.removeChild(fruit);
+var Fruits = {
+    create: function(gameScene){
+        var instance = Object.create(this);
+        instance.gameScene = gameScene;
+        // defaults
+        instance.defaultVelCap = 4;
+        instance.velCap = 4;
+        instance.list = new LinkedList();
+        return instance;
+    },
+    add: function(path){
+        this.list.push(new Sprite(TextureCache[path]));
+        var newFruit = this.list.tail;
+        newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
+        newFruit.vy = random(1, this.velCap);
+        if (this.velCap < 6) this.velCap += 0.005;
+        this.gameScene.addChild(newFruit);
+    },
+    update: function(player){
+        this.list.resetCursor();
+        var funcArgs = {done: false, returnVal: false};
+        while(this.list.next() && !funcArgs.done){
+            var fruit = this.list.current;
+            fruit.y += fruit.vy;
+            if (fruit.y >= window.innerHeight){
+                this.reachedEnd(fruit, funcArgs);
             }
-            velCap = defaultVelCap;
-            return true;
+            else if (player.hit(fruit)){
+                this.hitPlayer(fruit, funcArgs);
+            }
         }
-        else if (player.hit(fruit)){
-            fruit.visible = false;
-            this.list.removeCurrent();
+        return funcArgs.returnVal;
+    },
+    reachedEnd: function(fruit, funcArgs){
+        funcArgs.done = true;
+        funcArgs.returnVal = true;
+    },
+    hitPlayer: function(fruit, funcArgs){
+        fruit.visible = false;
+        this.list.removeCurrent();
+        funcArgs.returnVal = false;
+    },
+    clear: function(){
+        while(this.list.length){
+            var curFruit = this.list.shift();
+            this.gameScene.removeChild(curFruit);
         }
+        this.velCap = this.defaultVelCap;
     }
-    return false;
-}
-
-function random(min, max){
-    return Math.random() * (max - min) + min;
 }
 
 module.exports = Fruits;

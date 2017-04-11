@@ -10,5 +10,6 @@ module.exports = {
     pearPath: 'images/pear.png',
     duckRightPath: 'images/duck_right.png',
     duckLeftPath: 'images/duck_left.png',
-    skyPath: 'images/sky.png'
+    skyPath: 'images/sky.png',
+    poisonApplePath: 'images/poison_apple.png'
 };

@@ -12,18 +12,21 @@ var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
 var skyPath = a.skyPath;
 var pearPath = a.pearPath;
+var poisonApplePath = a.poisonApplePath;
 
 var resources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
-      pearPath
+      pearPath,
+      poisonApplePath
       ];
 var state;
 
 var isMobile = require('./detectMobile');
 var Player = require('./player');
 var Fruits = require('./fruits');
+var Poison = require('./poison');
 var player;
 var type = "WebGL";
 
@@ -31,7 +34,8 @@ var duckLeft, duckRight, sky;
 var duck = new Container();
 var gameScene = new Container();
 var gameOverScene = new Container();
-var fruits = new Fruits(gameScene);
+var fruits = Fruits.create(gameScene);
+var poison = Poison.create(gameScene);
 
 var mobileMousePos = { x: -1, y: -1 };
 var touchCenter;
@@ -45,6 +49,7 @@ PIXI.utils.sayHello(type);
 // Scale mode for all textures, will retain pixelation
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
+// set up document listeners
 if (isMobile){
     document.addEventListener("touchstart", onTouchStart, true);
     //document.addEventListener("touchend", onTouchEnd, true);  
@@ -118,7 +123,7 @@ loader
             });
             //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
 
-            player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
+            player = isMobile? Player.create(duck, mobileMousePos): Player.create(duck, mousePosition);
             gameScene.addChild(duck);
 
             stage.addChild(gameScene);
@@ -154,6 +159,7 @@ loader
             gameLoop();
 });
 
+// main game loop
 function gameLoop(){
     requestAnimationFrame(gameLoop);
 
@@ -167,7 +173,7 @@ var defatulFruitDropDelay = 60;
 var fruitDropDelay = defatulFruitDropDelay;
 function play(){
     if (!isMobile) player.updatePosition();
-    if (fruits.updateFruits(player)){
+    if (fruits.update(player) || poison.update(player)){
         state = end;
     }
     fruitCounter +=1;
@@ -176,7 +182,8 @@ function play(){
             fruitDropDelay -= 1;
         }
         fruitCounter = 0;
-        fruits.add();
+        fruits.add(pearPath);
+        poison.add(poisonApplePath);
     }
 }
 
@@ -185,6 +192,8 @@ function end(){
     gameOverScene.visible = true;
 
     player.clear();
+    fruits.clear();
+    poison.clear();
 }
 
 function reset(){
