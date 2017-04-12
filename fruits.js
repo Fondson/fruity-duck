@@ -13,14 +13,15 @@ var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
 
 var Fruits = {
+    defaultVelCap: 4,
+    init: function(gameScene){
+        this.gameScene = gameScene;
+        this.velCap = 4;
+        this.list = new LinkedList();
+        return this;
+    },
     create: function(gameScene){
-        var instance = Object.create(this);
-        instance.gameScene = gameScene;
-        // defaults
-        instance.defaultVelCap = 4;
-        instance.velCap = 4;
-        instance.list = new LinkedList();
-        return instance;
+        return Object.create(this).init(gameScene);
     },
     add: function(path){
         this.list.push(new Sprite(TextureCache[path]));

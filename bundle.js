@@ -39,14 +39,15 @@ var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
 
 var Fruits = {
+    defaultVelCap: 4,
+    init: function(gameScene){
+        this.gameScene = gameScene;
+        this.velCap = 4;
+        this.list = new LinkedList();
+        return this;
+    },
     create: function(gameScene){
-        var instance = Object.create(this);
-        instance.gameScene = gameScene;
-        // defaults
-        instance.defaultVelCap = 4;
-        instance.velCap = 4;
-        instance.list = new LinkedList();
-        return instance;
+        return Object.create(this).init(gameScene);
     },
     add: function(path){
         this.list.push(new Sprite(TextureCache[path]));
@@ -55829,25 +55830,23 @@ var duckLeftPath = a.duckLeftPath;
 var skyPath = a.skyPath;
 var pearPath = a.pearPath;
 
-var Poison = {
-    appearanceRate: 30, // out of 100
-    super_: null,
-    create: function(gameScene){
-        var super_ = Fruits.create(gameScene);
-        this.super_ = super_;
-        // swap
-        [this.super_.reachedEnd, this.super_.hitPlayer] = 
-            [this.super_.hitPlayer, this.super_.reachedEnd];
-        Object.setPrototypeOf(this, super_);
-        return this;
-    },
-    add: function(path){
-        var rand = random(0,100);
-        if (rand <= this.appearanceRate){
-            this.super_.add(path);
-        }
+var Poison = Object.create(Fruits);
+Poison.appearanceRate = 30 // out of 100
+
+Poison.create = function(gameScene){
+    this.init(gameScene);
+    // swap
+    [this.reachedEnd, this.hitPlayer] = 
+        [this.hitPlayer, this.reachedEnd];
+    return this;
+};
+
+Poison.add = function(path){
+    var rand = random(0,100);
+    if (rand <= this.appearanceRate){
+        this.__proto__.add.apply(this, [path]);
     }
-}
+};
 
 module.exports = Poison;
 },{"./alias":1,"./fruits":3,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523}],523:[function(require,module,exports){
