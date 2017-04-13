@@ -12,26 +12,21 @@ var Container = a.Container,
 var duckRightPath = a.duckRightPath;
 var duckLeftPath = a.duckLeftPath;
 
-var Fruits = {
-    defaultVelCap: 4,
-    init: function(gameScene){
+class Fruits{
+    constructor(gameScene){
         this.gameScene = gameScene;
         this.velCap = 4;
         this.list = new LinkedList();
-        return this;
-    },
-    create: function(gameScene){
-        return Object.create(this).init(gameScene);
-    },
-    add: function(path){
+    }
+    add(path){
         this.list.push(new Sprite(TextureCache[path]));
         var newFruit = this.list.tail;
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
         newFruit.vy = random(1, this.velCap);
         if (this.velCap < 6) this.velCap += 0.005;
         this.gameScene.addChild(newFruit);
-    },
-    update: function(player){
+    }
+    update(player){
         this.list.resetCursor();
         var funcArgs = {done: false, returnVal: false};
         while(this.list.next() && !funcArgs.done){
@@ -45,22 +40,25 @@ var Fruits = {
             }
         }
         return funcArgs.returnVal;
-    },
-    reachedEnd: function(fruit, funcArgs){
+    }
+    reachedEnd(fruit, funcArgs){
         funcArgs.done = true;
         funcArgs.returnVal = true;
-    },
-    hitPlayer: function(fruit, funcArgs){
+    }
+    hitPlayer(fruit, funcArgs){
         fruit.visible = false;
         this.list.removeCurrent();
         funcArgs.returnVal = false;
-    },
-    clear: function(){
+    }
+    clear(){
         while(this.list.length){
             var curFruit = this.list.shift();
             this.gameScene.removeChild(curFruit);
         }
         this.velCap = this.defaultVelCap;
+    }
+    get defaultVelCap(){
+        return 4;
     }
 }
 

@@ -3,26 +3,23 @@ var isMobile = require('./detectMobile');
 
 const RIGHT = 0;
 const LEFT = 1;
-var Player = {
-    mousePosition: [], // delayed array of coordinates
-    create: function(sprite, mousePos){
-        var instance = Object.create(this);
-        instance.sprite = sprite;
-        instance.mousePos = mousePos; // original mousePosition obj
-        instance.centerPos = { x: sprite.x,
-            y: sprite.y} // used in mobile positioning
-        instance.turnRight();
-        return instance;
-    },
-    turnRight: function(){
+
+class Player{
+    constructor(sprite, mousePosition){
+        this.delayedMousePosition = []; // delayed array of coordinates
+        this.sprite = sprite;
+        this.mousePosition = mousePosition;
+        this.turnRight();
+    }
+    turnRight(){
         this.sprite.children[RIGHT].visible = true;
         this.sprite.children[LEFT].visible = false;
-    },
-    turnLeft: function(){
+    }
+    turnLeft(){
         this.sprite.children[RIGHT].visible = false;
         this.sprite.children[LEFT].visible = true;
-    },
-    hit: function hitTestRectangle(r2) {
+    }
+    hit(r2) {
         //Define the variables we'll need to calculate
         var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
@@ -70,8 +67,8 @@ var Player = {
 
         //`hit` will be either `true` or `false`
         return hit;
-    },
-    updatePositionMobile: function(centerMousePos, curMousePos){
+    }
+    updatePositionMobile(centerMousePos, curMousePos){
         var globalDiffX = curMousePos.x - centerMousePos.x;
         var globalDiffY = curMousePos.y - centerMousePos.y;
         var newX = this.centerPos.x + globalDiffX;
@@ -84,10 +81,10 @@ var Player = {
         }
         this.sprite.x = newX;
         this.sprite.y = newY;
-    },
-    updatePosition: function(){
-        if (this.mousePosition.length >= 5){
-            var curMousePosition = this.mousePosition.shift();
+    }
+    updatePosition(){
+        if (this.delayedMousePosition.length >= 5){
+            var curMousePosition = this.delayedMousePosition.shift();
             this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
             this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
 
@@ -110,19 +107,18 @@ var Player = {
             }
         }
 
-        this.mousePosition.push({x: this.mousePos.x, y: this.mousePos.y});
-    },
-    clear: function(){
-        this.mousePosition = [];
+        this.delayedMousePosition.push({x: this.mousePosition.x, y: this.mousePosition.y});
+    }
+    clear(){
+        this.delayedMousePosition = [];
         // reset player position
         if (isMobile){
             this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 
                     window.innerHeight - this.sprite.height - 20);
         }else{
-            this.sprite.position.set(this.mousePos.x, this.mousePos.y);
+            this.sprite.position.set(this.mousePosition.x, this.mousePosition.y);
         }
     }
-
 }
 
 module.exports = Player;

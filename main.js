@@ -34,8 +34,8 @@ var duckLeft, duckRight, sky;
 var duck = new Container();
 var gameScene = new Container();
 var gameOverScene = new Container();
-var fruits = Fruits.create(gameScene);
-var poison = Poison.create(gameScene);
+var fruits = new Fruits(gameScene);
+var poison = new Poison(gameScene);
 
 var mobileMousePos = { x: -1, y: -1 };
 var touchCenter;
@@ -52,7 +52,6 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 // set up document listeners
 if (isMobile){
     document.addEventListener("touchstart", onTouchStart, true);
-    //document.addEventListener("touchend", onTouchEnd, true);  
     document.addEventListener("touchmove", onTouchMove, true);
 
     function onTouchStart(event){  
@@ -70,12 +69,7 @@ if (isMobile){
         mobileMousePos.x = event.touches[0].clientX;  
         mobileMousePos.y = event.touches[0].clientY;
         player.updatePositionMobile(touchCenter, {x: mobileMousePos.x, y: mobileMousePos.y});
-        //console.log(event.touches[0].clientX);
     }
-    // function onTouchEnd(event){  
-    //     mobileMousePos.x = event.touches[0].clientX;  
-    //     mobileMousePos.y = event.touches[0].clientY;
-    // }
 }else{
     document.addEventListener("click", onClick, true);
     function onClick(event){  
@@ -123,7 +117,7 @@ loader
             });
             //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
 
-            player = isMobile? Player.create(duck, mobileMousePos): Player.create(duck, mousePosition);
+            player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
             gameScene.addChild(duck);
 
             stage.addChild(gameScene);
@@ -150,10 +144,6 @@ loader
 
             //Tell the `renderer` to `render` the `stage`
             renderer.render(stage);
-
-            renderer.view.width = window.innerWidth;
-            renderer.view.height = window.innerHeight;
-            
             state = play;
 
             gameLoop();
@@ -178,7 +168,7 @@ function play(){
     }
     fruitCounter +=1;
     if (fruitCounter >= fruitDropDelay){
-        if (fruitDropDelay > 15) {
+        if (fruitDropDelay > 20) {
             fruitDropDelay -= 1;
         }
         fruitCounter = 0;
