@@ -1,44 +1,44 @@
-var a = require('./alias');
+const a = require('./alias');
 
 //Aliases
-var Container = a.Container,
+const Container = a.Container,
     autoDetectRenderer = a.autoDetectRenderer,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
     Text = a.Text,
     TextureCache = a.TextureCache;
-var duckRightPath = a.duckRightPath;
-var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
-var poisonApplePath = a.poisonApplePath;
+const duckRightPath = a.duckRightPath;
+const duckLeftPath = a.duckLeftPath;
+const skyPath = a.skyPath;
+const pearPath = a.pearPath;
+const poisonApplePath = a.poisonApplePath;
 
-var resources = [
+const imageResources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
       pearPath,
       poisonApplePath
       ];
-var state;
+let state;
 
-var isMobile = require('./detectMobile');
-var Player = require('./player');
-var Fruits = require('./fruits');
-var Poison = require('./poison');
-var player;
-var type = "WebGL";
+const isMobile = require('./detectMobile');
+const Player = require('./player');
+const Fruits = require('./fruits');
+const Poison = require('./poison');
+let type = "WebGL";
 
-var duckLeft, duckRight, sky;
-var duck = new Container();
-var gameScene = new Container();
-var gameOverScene = new Container();
-var fruits = new Fruits(gameScene);
-var poison = new Poison(gameScene);
+let duckLeft, duckRight, sky;
+let player;
+const duck = new Container();
+const gameScene = new Container();
+const gameOverScene = new Container();
+const fruits = new Fruits(gameScene);
+const poison = new Poison(gameScene);
 
-var mobileMousePos = { x: -1, y: -1 };
-var touchCenter;
+const mobileMousePos = { x: -1, y: -1 };
+const touchCenter = { x: -1, y: -1};
 
 if(!PIXI.utils.isWebGLSupported()){
     type = "canvas";
@@ -58,7 +58,8 @@ if (isMobile){
         if (state === play){
             mobileMousePos.x = event.touches[0].clientX;  
             mobileMousePos.y = event.touches[0].clientY;
-            touchCenter = {x: mobileMousePos.x, y: mobileMousePos.y};
+            touchCenter.x = mobileMousePos.x;
+            touchCenter.y = mobileMousePos.y;
             player.centerPos = {x: player.sprite.x, y: player.sprite.y};
         }
         else if (state === end){
@@ -80,11 +81,11 @@ if (isMobile){
 }
 
 //Create the renderer
-var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
+const renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
     antialias:false, transparent:false, resolution:1
 });
 
-var mousePosition = renderer.plugins.interaction.mouse.global;
+const mousePosition = renderer.plugins.interaction.mouse.global;
 renderer.autoResize = true;
 renderer.backgroundColor = 0x000000;
 
@@ -92,11 +93,11 @@ renderer.backgroundColor = 0x000000;
 document.body.appendChild(renderer.view);
 
 //Create a container object called the `stage`
-var stage = new Container();
+const stage = new Container();
 
 // loading sprites
 loader
-  .add(resources)
+  .add(imageResources)
   .load(function setup() {
             // set up gameScene
             sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
@@ -124,7 +125,7 @@ loader
 
             // set up gameOverScene
             gameOverScene.visible = false;
-            var loseMessage = new Text(
+            const loseMessage = new Text(
                 "You lost!",
                 {font: "64px Futura", fill: "white"}
             );
@@ -132,7 +133,7 @@ loader
             loseMessage.y = window.innerHeight / 3;            
             gameOverScene.addChild(loseMessage);
 
-            var restartMessage = new Text(
+            const restartMessage = new Text(
                 "Click to restart",
                 {font: "50px Futura", fill: "white"}
             );
@@ -158,20 +159,25 @@ function gameLoop(){
     renderer.render(stage);
 };
 
-var fruitCounter = 0;
-var defatulFruitDropDelay = 60;
-var fruitDropDelay = defatulFruitDropDelay;
+
+const fruitDropDelay = {
+    default: 60,
+    counter: 0,
+    delay: 0,
+    minDelay: 20
+};
+fruitDropDelay.delay = fruitDropDelay.default;
 function play(){
     if (!isMobile) player.updatePosition();
     if (fruits.update(player) || poison.update(player)){
         state = end;
     }
-    fruitCounter +=1;
-    if (fruitCounter >= fruitDropDelay){
-        if (fruitDropDelay > 20) {
-            fruitDropDelay -= 1;
+    fruitDropDelay.counter +=1;
+    if (fruitDropDelay.counter >= fruitDropDelay.delay){
+        if (fruitDropDelay.delay > fruitDropDelay.minDelay) {
+            fruitDropDelay.delay -= 1;
         }
-        fruitCounter = 0;
+        fruitDropDelay.counter = 0;
         fruits.add(pearPath);
         poison.add(poisonApplePath);
     }
@@ -187,7 +193,7 @@ function end(){
 }
 
 function reset(){
-    fruitDropDelay = defatulFruitDropDelay;
+    fruitDropDelay.delay = fruitDropDelay.default;
     state = play;
     gameOverScene.visible = false;
     gameScene.visible = true;

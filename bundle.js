@@ -16,37 +16,37 @@ module.exports = {
 };
 },{}],2:[function(require,module,exports){
 // detect mobile
-var isMobile = function() {
-  var check = false;
+const isMobile = function() {
+  const check = false;
   (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
   return check;
 }();
 
 module.exports = isMobile;
 },{}],3:[function(require,module,exports){
-var a = require('./alias');
-var LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
-var random = require('./random');
+const a = require('./alias');
+const LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
+const random = require('./random');
 
 //Aliases
-var Container = a.Container,
+const Container = a.Container,
     autoDetectRenderer = a.autoDetectRenderer,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
     TextureCache = a.TextureCache;
-var duckRightPath = a.duckRightPath;
-var duckLeftPath = a.duckLeftPath;
+const duckRightPath = a.duckRightPath;
+const duckLeftPath = a.duckLeftPath;
 
 class Fruits{
     constructor(gameScene){
         this.gameScene = gameScene;
-        this.velCap = 4;
+        this.velCap = this.defaultVelCap;
         this.list = new LinkedList();
     }
     add(path){
         this.list.push(new Sprite(TextureCache[path]));
-        var newFruit = this.list.tail;
+        const newFruit = this.list.tail;
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
         newFruit.vy = random(1, this.velCap);
         if (this.velCap < 6) this.velCap += 0.005;
@@ -54,9 +54,9 @@ class Fruits{
     }
     update(player){
         this.list.resetCursor();
-        var funcArgs = {done: false, returnVal: false};
+        const funcArgs = {done: false, returnVal: false};
         while(this.list.next() && !funcArgs.done){
-            var fruit = this.list.current;
+            const fruit = this.list.current;
             fruit.y += fruit.vy;
             if (fruit.y >= window.innerHeight){
                 this.reachedEnd(fruit, funcArgs);
@@ -78,7 +78,7 @@ class Fruits{
     }
     clear(){
         while(this.list.length){
-            var curFruit = this.list.shift();
+            const curFruit = this.list.shift();
             this.gameScene.removeChild(curFruit);
         }
         this.velCap = this.defaultVelCap;
@@ -90,47 +90,47 @@ class Fruits{
 
 module.exports = Fruits;
 },{"./alias":1,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523}],4:[function(require,module,exports){
-var a = require('./alias');
+const a = require('./alias');
 
 //Aliases
-var Container = a.Container,
+const Container = a.Container,
     autoDetectRenderer = a.autoDetectRenderer,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
     Text = a.Text,
     TextureCache = a.TextureCache;
-var duckRightPath = a.duckRightPath;
-var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
-var poisonApplePath = a.poisonApplePath;
+const duckRightPath = a.duckRightPath;
+const duckLeftPath = a.duckLeftPath;
+const skyPath = a.skyPath;
+const pearPath = a.pearPath;
+const poisonApplePath = a.poisonApplePath;
 
-var resources = [
+const imageResources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
       pearPath,
       poisonApplePath
       ];
-var state;
+let state;
 
-var isMobile = require('./detectMobile');
-var Player = require('./player');
-var Fruits = require('./fruits');
-var Poison = require('./poison');
-var player;
-var type = "WebGL";
+const isMobile = require('./detectMobile');
+const Player = require('./player');
+const Fruits = require('./fruits');
+const Poison = require('./poison');
+const type = "WebGL";
 
-var duckLeft, duckRight, sky;
-var duck = new Container();
-var gameScene = new Container();
-var gameOverScene = new Container();
-var fruits = new Fruits(gameScene);
-var poison = new Poison(gameScene);
+let duckLeft, duckRight, sky;
+let player;
+const duck = new Container();
+const gameScene = new Container();
+const gameOverScene = new Container();
+const fruits = new Fruits(gameScene);
+const poison = new Poison(gameScene);
 
-var mobileMousePos = { x: -1, y: -1 };
-var touchCenter;
+const mobileMousePos = { x: -1, y: -1 };
+const touchCenter = { x: -1, y: -1};
 
 if(!PIXI.utils.isWebGLSupported()){
     type = "canvas";
@@ -150,7 +150,8 @@ if (isMobile){
         if (state === play){
             mobileMousePos.x = event.touches[0].clientX;  
             mobileMousePos.y = event.touches[0].clientY;
-            touchCenter = {x: mobileMousePos.x, y: mobileMousePos.y};
+            touchCenter.x = mobileMousePos.x;
+            touchCenter.y = mobileMousePos.y;
             player.centerPos = {x: player.sprite.x, y: player.sprite.y};
         }
         else if (state === end){
@@ -172,11 +173,11 @@ if (isMobile){
 }
 
 //Create the renderer
-var renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
+const renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
     antialias:false, transparent:false, resolution:1
 });
 
-var mousePosition = renderer.plugins.interaction.mouse.global;
+const mousePosition = renderer.plugins.interaction.mouse.global;
 renderer.autoResize = true;
 renderer.backgroundColor = 0x000000;
 
@@ -184,11 +185,11 @@ renderer.backgroundColor = 0x000000;
 document.body.appendChild(renderer.view);
 
 //Create a container object called the `stage`
-var stage = new Container();
+const stage = new Container();
 
 // loading sprites
 loader
-  .add(resources)
+  .add(imageResources)
   .load(function setup() {
             // set up gameScene
             sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
@@ -216,7 +217,7 @@ loader
 
             // set up gameOverScene
             gameOverScene.visible = false;
-            var loseMessage = new Text(
+            const loseMessage = new Text(
                 "You lost!",
                 {font: "64px Futura", fill: "white"}
             );
@@ -224,7 +225,7 @@ loader
             loseMessage.y = window.innerHeight / 3;            
             gameOverScene.addChild(loseMessage);
 
-            var restartMessage = new Text(
+            const restartMessage = new Text(
                 "Click to restart",
                 {font: "50px Futura", fill: "white"}
             );
@@ -250,23 +251,29 @@ function gameLoop(){
     renderer.render(stage);
 };
 
-var fruitCounter = 0;
-var defatulFruitDropDelay = 60;
-var fruitDropDelay = defatulFruitDropDelay;
+
+const fruitDropDelay = {
+    default: 60,
+    counter: 0,
+    delay: 0,
+    minDelay: 20
+};
+fruitDropDelay.delay = fruitDropDelay.default;
 function play(){
     if (!isMobile) player.updatePosition();
     if (fruits.update(player) || poison.update(player)){
         state = end;
     }
-    fruitCounter +=1;
-    if (fruitCounter >= fruitDropDelay){
-        if (fruitDropDelay > 20) {
-            fruitDropDelay -= 1;
+    fruitDropDelay.counter +=1;
+    if (fruitDropDelay.counter >= fruitDropDelay.delay){
+        if (fruitDropDelay.delay > fruitDropDelay.minDelay) {
+            fruitDropDelay.delay -= 1;
         }
-        fruitCounter = 0;
+        fruitDropDelay.counter = 0;
         fruits.add(pearPath);
         poison.add(poisonApplePath);
     }
+    console.log(fruitDropDelay);
 }
 
 function end(){
@@ -279,7 +286,7 @@ function end(){
 }
 
 function reset(){
-    fruitDropDelay = defatulFruitDropDelay;
+    fruitDropDelay.delay = fruitDropDelay.default;
     state = play;
     gameOverScene.visible = false;
     gameScene.visible = true;
@@ -55669,8 +55676,8 @@ module.exports = E;
 }));
 
 },{}],521:[function(require,module,exports){
-var math = require('mathjs');
-var isMobile = require('./detectMobile');
+const math = require('mathjs');
+const isMobile = require('./detectMobile');
 
 const RIGHT = 0;
 const LEFT = 1;
@@ -55692,7 +55699,7 @@ class Player{
     }
     hit(r2) {
         //Define the variables we'll need to calculate
-        var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+        let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
         //hit will determine whether there's a collision
         hit = false;
@@ -55740,10 +55747,10 @@ class Player{
         return hit;
     }
     updatePositionMobile(centerMousePos, curMousePos){
-        var globalDiffX = curMousePos.x - centerMousePos.x;
-        var globalDiffY = curMousePos.y - centerMousePos.y;
-        var newX = this.centerPos.x + globalDiffX;
-        var newY = this.centerPos.y + globalDiffY;
+        const globalDiffX = curMousePos.x - centerMousePos.x;
+        const globalDiffY = curMousePos.y - centerMousePos.y;
+        const newX = this.centerPos.x + globalDiffX;
+        const newY = this.centerPos.y + globalDiffY;
         if (math.abs(newX - this.sprite.x) < 3){}
         else if (newX < this.sprite.x){
             this.turnLeft();
@@ -55755,7 +55762,7 @@ class Player{
     }
     updatePosition(){
         if (this.delayedMousePosition.length >= 5){
-            var curMousePosition = this.delayedMousePosition.shift();
+            const curMousePosition = this.delayedMousePosition.shift();
             this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
             this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
 
@@ -55797,22 +55804,22 @@ module.exports = Player;
 
 
 },{"./detectMobile":2,"mathjs":10}],522:[function(require,module,exports){
-var a = require('./alias');
-var LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
-var Fruits = require('./fruits');
-var random = require('./random');
+const a = require('./alias');
+const LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
+const Fruits = require('./fruits');
+const random = require('./random');
 
 //Aliases
-var Container = a.Container,
+const Container = a.Container,
     autoDetectRenderer = a.autoDetectRenderer,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
     TextureCache = a.TextureCache;
-var duckRightPath = a.duckRightPath;
-var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
+const duckRightPath = a.duckRightPath;
+const duckLeftPath = a.duckLeftPath;
+const skyPath = a.skyPath;
+const pearPath = a.pearPath;
 
 class Poison extends Fruits{
     constructor(gameScene){
@@ -55822,7 +55829,7 @@ class Poison extends Fruits{
             [this.hitPlayer, this.reachedEnd];
     }
     add(path){
-        var rand = random(0,100);
+        const rand = random(0,100);
         if (rand <= this.appearanceRate){
             super.add(path);
         }

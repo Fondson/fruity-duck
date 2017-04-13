@@ -1,5 +1,5 @@
-var math = require('mathjs');
-var isMobile = require('./detectMobile');
+const math = require('mathjs');
+const isMobile = require('./detectMobile');
 
 const RIGHT = 0;
 const LEFT = 1;
@@ -21,7 +21,7 @@ class Player{
     }
     hit(r2) {
         //Define the variables we'll need to calculate
-        var hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+        let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
 
         //hit will determine whether there's a collision
         hit = false;
@@ -69,10 +69,10 @@ class Player{
         return hit;
     }
     updatePositionMobile(centerMousePos, curMousePos){
-        var globalDiffX = curMousePos.x - centerMousePos.x;
-        var globalDiffY = curMousePos.y - centerMousePos.y;
-        var newX = this.centerPos.x + globalDiffX;
-        var newY = this.centerPos.y + globalDiffY;
+        const globalDiffX = curMousePos.x - centerMousePos.x;
+        const globalDiffY = curMousePos.y - centerMousePos.y;
+        const newX = this.centerPos.x + globalDiffX;
+        const newY = this.centerPos.y + globalDiffY;
         if (math.abs(newX - this.sprite.x) < 3){}
         else if (newX < this.sprite.x){
             this.turnLeft();
@@ -84,7 +84,7 @@ class Player{
     }
     updatePosition(){
         if (this.delayedMousePosition.length >= 5){
-            var curMousePosition = this.delayedMousePosition.shift();
+            const curMousePosition = this.delayedMousePosition.shift();
             this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
             this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
 

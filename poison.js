@@ -1,19 +1,19 @@
-var a = require('./alias');
-var LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
-var Fruits = require('./fruits');
-var random = require('./random');
+const a = require('./alias');
+const LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
+const Fruits = require('./fruits');
+const random = require('./random');
 
 //Aliases
-var Container = a.Container,
+const Container = a.Container,
     autoDetectRenderer = a.autoDetectRenderer,
     loader = a.loader,
     resources = a.resources,
     Sprite = a.Sprite,
     TextureCache = a.TextureCache;
-var duckRightPath = a.duckRightPath;
-var duckLeftPath = a.duckLeftPath;
-var skyPath = a.skyPath;
-var pearPath = a.pearPath;
+const duckRightPath = a.duckRightPath;
+const duckLeftPath = a.duckLeftPath;
+const skyPath = a.skyPath;
+const pearPath = a.pearPath;
 
 class Poison extends Fruits{
     constructor(gameScene){
@@ -23,7 +23,7 @@ class Poison extends Fruits{
             [this.hitPlayer, this.reachedEnd];
     }
     add(path){
-        var rand = random(0,100);
+        const rand = random(0,100);
         if (rand <= this.appearanceRate){
             super.add(path);
         }
