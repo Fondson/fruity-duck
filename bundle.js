@@ -119,7 +119,7 @@ const isMobile = require('./detectMobile');
 const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
-const type = "WebGL";
+let type = "WebGL";
 
 let duckLeft, duckRight, sky;
 let player;
@@ -273,7 +273,6 @@ function play(){
         fruits.add(pearPath);
         poison.add(poisonApplePath);
     }
-    console.log(fruitDropDelay);
 }
 
 function end(){
