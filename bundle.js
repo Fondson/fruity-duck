@@ -94,7 +94,7 @@ class Fruits{
         return 4;
     }
     get fruitToScreenHeightRatio(){
-        return 16;
+        return 18;
     }
 }
 
