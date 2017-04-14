@@ -27,6 +27,7 @@ module.exports = isMobile;
 const a = require('./alias');
 const LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
 const random = require('./random');
+const ScaleSprite = require('./scaleSprite');
 
 //Aliases
 const Container = a.Container,
@@ -46,13 +47,7 @@ class Fruits{
     }
     add(path){
         const newFruit = new Sprite(TextureCache[path])
-
-        // scale sprite
-        const newFruitHeight = window.innerHeight / this.fruitToScreenHeightRatio;
-        const scaleRatio = newFruit.height / newFruitHeight;
-        newFruit.height = newFruitHeight;
-        newFruit.width = newFruit.width / scaleRatio;
-
+        ScaleSprite.fromHeightRatio(newFruit, this.fruitToScreenHeightRatio);
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
         newFruit.vy = random(1, this.velCap);
         this.list.push(newFruit);
@@ -91,7 +86,7 @@ class Fruits{
         this.velCap = this.defaultVelCap;
     }
     get defaultVelCap(){
-        return 4;
+        return 3;
     }
     get fruitToScreenHeightRatio(){
         return 18;
@@ -99,7 +94,7 @@ class Fruits{
 }
 
 module.exports = Fruits;
-},{"./alias":1,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523}],4:[function(require,module,exports){
+},{"./alias":1,"./node_modules/linkedlist/lib/linkedlist":8,"./random":523,"./scaleSprite":524}],4:[function(require,module,exports){
 const a = require('./alias');
 
 //Aliases
@@ -129,6 +124,7 @@ const isMobile = require('./detectMobile');
 const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
+const ScaleSprite = require('./scaleSprite');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
 const duckToScreenHeightRatio = 9;
@@ -246,13 +242,7 @@ function start(){
                 duckLeft = new Sprite(TextureCache[duckLeftPath]);
                 duck.addChild(duckRight);
                 duck.addChild(duckLeft);
-
-                // scale sprite
-                const newDuckHeight = window.innerHeight / duckToScreenHeightRatio;
-                const scaleRatio = duck.height / newDuckHeight;
-                duck.height = newDuckHeight;
-                duck.width = duck.width / scaleRatio;
-
+                ScaleSprite.fromHeightRatio(duck, duckToScreenHeightRatio);
                 if (isMobile) {
                 duck.position.set((window.innerWidth - duck.width) / 2, 
                     window.innerHeight - duck.height - 20);
@@ -268,18 +258,23 @@ function start(){
                 gameOverScene.visible = false;
                 const loseMessage = new Text(
                     "You lost!",
-                    {font: "35px Press Start 2P", fill: "white"}
+                    {font: "50px Press Start 2P", fill: "white"}
                 );
+
+                ScaleSprite.fromWidthRatio(loseMessage, 3);
                 loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
-                loseMessage.y = window.innerHeight / 3;            
+                loseMessage.y = window.innerHeight / 3;
+
+
                 gameOverScene.addChild(loseMessage);
 
                 const restartMessage = new Text(
                     "Click to restart",
-                    {font: "20px Press Start 2P", fill: "white"}
+                    {font: "50px Press Start 2P", fill: "white"}
                 );
+                ScaleSprite.fromWidthRatio(restartMessage, 2.5);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
-                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
+                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 10;     
                 gameOverScene.addChild(restartMessage);
 
                 stage.addChild(gameOverScene);
@@ -351,7 +346,7 @@ function start(){
 
 
 
-},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521,"./poison":522}],5:[function(require,module,exports){
+},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521,"./poison":522,"./scaleSprite":524}],5:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.1 11/02/2016
  *
@@ -55896,4 +55891,21 @@ module.exports = Poison;
 module.exports = function random(min, max){
     return Math.random() * (max - min) + min;
 }
+},{}],524:[function(require,module,exports){
+class ScaleSprite{
+    static fromHeightRatio(sprite, spriteToScreenHeightRatio) {
+        const newSpriteHeight = window.innerHeight / spriteToScreenHeightRatio;
+        const scaleRatio = sprite.height / newSpriteHeight;
+        sprite.height = newSpriteHeight;
+        sprite.width = sprite.width / scaleRatio;
+    }
+    static fromWidthRatio(sprite, spriteToScreenWidthRatio){
+        const newSpriteWidth = window.innerWidth / spriteToScreenWidthRatio;
+        const scaleRatio = sprite.width / newSpriteWidth;
+        sprite.width = newSpriteWidth;
+        sprite.height = sprite.height / scaleRatio;
+    }
+}
+
+module.exports = ScaleSprite;
 },{}]},{},[4]);

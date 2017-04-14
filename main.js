@@ -27,6 +27,7 @@ const isMobile = require('./detectMobile');
 const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
+const ScaleSprite = require('./scaleSprite');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
 const duckToScreenHeightRatio = 9;
@@ -144,13 +145,7 @@ function start(){
                 duckLeft = new Sprite(TextureCache[duckLeftPath]);
                 duck.addChild(duckRight);
                 duck.addChild(duckLeft);
-
-                // scale sprite
-                const newDuckHeight = window.innerHeight / duckToScreenHeightRatio;
-                const scaleRatio = duck.height / newDuckHeight;
-                duck.height = newDuckHeight;
-                duck.width = duck.width / scaleRatio;
-
+                ScaleSprite.fromHeightRatio(duck, duckToScreenHeightRatio);
                 if (isMobile) {
                 duck.position.set((window.innerWidth - duck.width) / 2, 
                     window.innerHeight - duck.height - 20);
@@ -166,18 +161,23 @@ function start(){
                 gameOverScene.visible = false;
                 const loseMessage = new Text(
                     "You lost!",
-                    {font: "35px Press Start 2P", fill: "white"}
+                    {font: "50px Press Start 2P", fill: "white"}
                 );
+
+                ScaleSprite.fromWidthRatio(loseMessage, 3);
                 loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
-                loseMessage.y = window.innerHeight / 3;            
+                loseMessage.y = window.innerHeight / 3;
+
+
                 gameOverScene.addChild(loseMessage);
 
                 const restartMessage = new Text(
                     "Click to restart",
-                    {font: "20px Press Start 2P", fill: "white"}
+                    {font: "50px Press Start 2P", fill: "white"}
                 );
+                ScaleSprite.fromWidthRatio(restartMessage, 2.5);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
-                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
+                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 10;     
                 gameOverScene.addChild(restartMessage);
 
                 stage.addChild(gameOverScene);

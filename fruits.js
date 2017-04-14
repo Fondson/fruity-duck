@@ -1,6 +1,7 @@
 const a = require('./alias');
 const LinkedList = require('./node_modules/linkedlist/lib/linkedlist');
 const random = require('./random');
+const ScaleSprite = require('./scaleSprite');
 
 //Aliases
 const Container = a.Container,
@@ -20,13 +21,7 @@ class Fruits{
     }
     add(path){
         const newFruit = new Sprite(TextureCache[path])
-
-        // scale sprite
-        const newFruitHeight = window.innerHeight / this.fruitToScreenHeightRatio;
-        const scaleRatio = newFruit.height / newFruitHeight;
-        newFruit.height = newFruitHeight;
-        newFruit.width = newFruit.width / scaleRatio;
-
+        ScaleSprite.fromHeightRatio(newFruit, this.fruitToScreenHeightRatio);
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
         newFruit.vy = random(1, this.velCap);
         this.list.push(newFruit);
@@ -65,7 +60,7 @@ class Fruits{
         this.velCap = this.defaultVelCap;
     }
     get defaultVelCap(){
-        return 4;
+        return 3;
     }
     get fruitToScreenHeightRatio(){
         return 18;
