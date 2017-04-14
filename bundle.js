@@ -120,181 +120,217 @@ const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
 let type = "WebGL";
+const fontName = 'Press Start 2P';
 
-let duckLeft, duckRight, sky;
-let player;
-const duck = new Container();
-const gameScene = new Container();
-const gameOverScene = new Container();
-const fruits = new Fruits(gameScene);
-const poison = new Poison(gameScene);
+window.onload = function()
+{
+	WebFont.load(
+	{
+		// this event is triggered when the fonts have been rendered
+		active : function()
+		{
+			start();
+		},
 
-const mobileMousePos = { x: -1, y: -1 };
-const touchCenter = { x: -1, y: -1};
+        // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
+		fontloading : doMagic,
 
-if(!PIXI.utils.isWebGLSupported()){
-    type = "canvas";
-}
+		// multiple fonts can be passed here
+		google :
+		{
+			families: [ fontName ]
+		}
+	});
+};
 
-PIXI.utils.sayHello(type);
+function doMagic(){
+	// create <p> tag with our font and render some text secretly
+	var el = document.createElement('p');
+	el.style.fontFamily = fontName;
+	el.style.fontSize = "0px";
+	el.style.visibility = "hidden";
+	el.innerHTML = '.';
+	
+	document.body.appendChild(el);
+};
 
-// Scale mode for all textures, will retain pixelation
-PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+function start(){
+    let duckLeft, duckRight, sky;
+    let player;
+    const duck = new Container();
+    const gameScene = new Container();
+    const gameOverScene = new Container();
+    const fruits = new Fruits(gameScene);
+    const poison = new Poison(gameScene);
 
-// set up document listeners
-if (isMobile){
-    document.addEventListener("touchstart", onTouchStart, true);
-    document.addEventListener("touchmove", onTouchMove, true);
+    const mobileMousePos = { x: -1, y: -1 };
+    const touchCenter = { x: -1, y: -1};
 
-    function onTouchStart(event){  
-        if (state === play){
-            mobileMousePos.x = event.touches[0].clientX;  
-            mobileMousePos.y = event.touches[0].clientY;
-            touchCenter.x = mobileMousePos.x;
-            touchCenter.y = mobileMousePos.y;
-            player.centerPos = {x: player.sprite.x, y: player.sprite.y};
-        }
-        else if (state === end){
-            reset();
-        }
+    if(!PIXI.utils.isWebGLSupported()){
+        type = "canvas";
     }
-    function onTouchMove(event){  
-        mobileMousePos.x = event.touches[0].clientX;  
-        mobileMousePos.y = event.touches[0].clientY;
-        player.updatePositionMobile(touchCenter, {x: mobileMousePos.x, y: mobileMousePos.y});
-    }
-}else{
-    document.addEventListener("click", onClick, true);
-    function onClick(event){  
-        if (state === end){
-            reset();
-        }
-    }
-}
 
-//Create the renderer
-const renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
-    antialias:false, transparent:false, resolution:1
-});
+    PIXI.utils.sayHello(type);
 
-const mousePosition = renderer.plugins.interaction.mouse.global;
-renderer.autoResize = true;
-renderer.backgroundColor = 0x000000;
+    // Scale mode for all textures, will retain pixelation
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-//Add the canvas to the HTML document
-document.body.appendChild(renderer.view);
+    // set up document listeners
+    if (isMobile){
+        document.addEventListener("touchstart", onTouchStart, true);
+        document.addEventListener("touchmove", onTouchMove, true);
 
-//Create a container object called the `stage`
-const stage = new Container();
-
-// loading sprites
-loader
-  .add(imageResources)
-  .load(function setup() {
-            // set up gameScene
-            sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
-            gameScene.addChild(sky);
-
-            duckRight = new Sprite(TextureCache[duckRightPath]);
-            duckLeft = new Sprite(TextureCache[duckLeftPath]);
-            duck.addChild(duckRight);
-            duck.addChild(duckLeft);
-            if (isMobile) {
-              duck.position.set((window.innerWidth - duck.width) / 2, 
-                window.innerHeight - duck.height - 20);
+        function onTouchStart(event){  
+            if (state === play){
+                mobileMousePos.x = event.touches[0].clientX;  
+                mobileMousePos.y = event.touches[0].clientY;
+                touchCenter.x = mobileMousePos.x;
+                touchCenter.y = mobileMousePos.y;
+                player.centerPos = {x: player.sprite.x, y: player.sprite.y};
             }
-            else duck.position.set(mousePosition.x, mousePosition.y);
-            duck.interactive = true;
-            duck.on('pointermove', function(){
-                duck.x
-            });
-            //duck.pivot.set(duck.width/2, duck.height/2); // setting the pivot messes up hit detection
-
-            player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
-            gameScene.addChild(duck);
-
-            stage.addChild(gameScene);
-
-            // set up gameOverScene
-            gameOverScene.visible = false;
-            const loseMessage = new Text(
-                "You lost!",
-                {font: "64px Futura", fill: "white"}
-            );
-            loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
-            loseMessage.y = window.innerHeight / 3;            
-            gameOverScene.addChild(loseMessage);
-
-            const restartMessage = new Text(
-                "Click to restart",
-                {font: "50px Futura", fill: "white"}
-            );
-            restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
-            restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
-            gameOverScene.addChild(restartMessage);
-
-            stage.addChild(gameOverScene);
-
-            //Tell the `renderer` to `render` the `stage`
-            renderer.render(stage);
-            state = play;
-
-            gameLoop();
-});
-
-// main game loop
-function gameLoop(){
-    requestAnimationFrame(gameLoop);
-
-    state();
-
-    renderer.render(stage);
-};
-
-
-const fruitDropDelay = {
-    default: 60,
-    counter: 0,
-    delay: 0,
-    minDelay: 20
-};
-fruitDropDelay.delay = fruitDropDelay.default;
-function play(){
-    if (!isMobile) player.updatePosition();
-    if (fruits.update(player) || poison.update(player)){
-        state = end;
-    }
-    fruitDropDelay.counter +=1;
-    if (fruitDropDelay.counter >= fruitDropDelay.delay){
-        if (fruitDropDelay.delay > fruitDropDelay.minDelay) {
-            fruitDropDelay.delay -= 1;
+            else if (state === end){
+                reset();
+            }
         }
-        fruitDropDelay.counter = 0;
-        fruits.add(pearPath);
-        poison.add(poisonApplePath);
+        function onTouchMove(event){
+            if (state === play){
+                mobileMousePos.x = event.touches[0].clientX;  
+                mobileMousePos.y = event.touches[0].clientY;
+                player.updatePositionMobile(touchCenter, {x: mobileMousePos.x, y: mobileMousePos.y});
+            }
+        }
+    }else{
+        document.addEventListener("click", onClick, true);
+        function onClick(event){  
+            if (state === end){
+                reset();
+            }
+        }
     }
-}
 
-function end(){
-    gameScene.visible = false;
-    gameOverScene.visible = true;
+    //Create the renderer
+    const renderer = autoDetectRenderer(window.innerWidth, window.innerHeight, {
+        antialias:false, transparent:false, resolution: 1
+    });
 
-    player.clear();
-    fruits.clear();
-    poison.clear();
-}
+    const mousePosition = renderer.plugins.interaction.mouse.global;
+    renderer.autoResize = true;
+    renderer.backgroundColor = 0x000000;
 
-function reset(){
+    //Add the canvas to the HTML document
+    document.body.appendChild(renderer.view);
+
+    //Create a container object called the `stage`
+    const stage = new Container();
+
+    // loading sprites
+    loader
+    .add(imageResources)
+    .load(function setup() {
+                // set up gameScene
+                sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
+                gameScene.addChild(sky);
+
+                duckRight = new Sprite(TextureCache[duckRightPath]);
+                duckLeft = new Sprite(TextureCache[duckLeftPath]);
+                duck.addChild(duckRight);
+                duck.addChild(duckLeft);
+                if (isMobile) {
+                duck.position.set((window.innerWidth - duck.width) / 2, 
+                    window.innerHeight - duck.height - 20);
+                }
+                else duck.position.set(mousePosition.x, mousePosition.y);
+                //duck.interactive = true;
+
+                player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
+                gameScene.addChild(duck);
+
+                stage.addChild(gameScene);
+
+                // set up gameOverScene
+                gameOverScene.visible = false;
+                const loseMessage = new Text(
+                    "You lost!",
+                    {font: "40px Press Start 2P", fill: "white"}
+                );
+                loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
+                loseMessage.y = window.innerHeight / 3;            
+                gameOverScene.addChild(loseMessage);
+
+                const restartMessage = new Text(
+                    "Click to restart",
+                    {font: "25px Press Start 2P", fill: "white"}
+                );
+                restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
+                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
+                gameOverScene.addChild(restartMessage);
+
+                stage.addChild(gameOverScene);
+
+                //Tell the `renderer` to `render` the `stage`
+                renderer.render(stage);
+
+                // start the game
+                state = play;
+
+                gameLoop();
+    });
+
+    // main game loop
+    function gameLoop(){
+        requestAnimationFrame(gameLoop);
+
+        state();
+
+        renderer.render(stage);
+    };
+
+
+    const fruitDropDelay = {
+        default: 60,
+        counter: 0,
+        delay: 0,
+        minDelay: 20
+    };
     fruitDropDelay.delay = fruitDropDelay.default;
-    state = play;
-    gameOverScene.visible = false;
-    gameScene.visible = true;
-}
+    function play(){
+        if (!isMobile) player.updatePosition();
+        if (fruits.update(player) || poison.update(player)){
+            state = end;
+        }
+        fruitDropDelay.counter +=1;
+        if (fruitDropDelay.counter >= fruitDropDelay.delay){
+            if (fruitDropDelay.delay > fruitDropDelay.minDelay) {
+                fruitDropDelay.delay -= 1;
+            }
+            fruitDropDelay.counter = 0;
+            fruits.add(pearPath);
+            poison.add(poisonApplePath);
+        }
+    }
 
-window.addEventListener("resize", function(event){
-    renderer.view.style.width = window.innerWidth + 'px';
-    renderer.view.style.height = window.innerHeight + 'px';
-});
+    function end(){
+        gameScene.visible = false;
+        gameOverScene.visible = true;
+
+        player.clear();
+        fruits.clear();
+        poison.clear();
+    }
+
+    function reset(){
+        fruitDropDelay.delay = fruitDropDelay.default;
+        state = play;
+        gameOverScene.visible = false;
+        gameScene.visible = true;
+    }
+
+    window.addEventListener("resize", function(event){
+        renderer.view.style.width = window.innerWidth + 'px';
+        renderer.view.style.height = window.innerHeight + 'px';
+    });
+};
+
 
 
 
