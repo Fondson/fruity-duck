@@ -30,38 +30,39 @@ const Poison = require('./poison');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
 
-window.onload = function()
-{
-	WebFont.load(
-	{
-		// this event is triggered when the fonts have been rendered
-		active : function()
-		{
-			start();
-		},
+// window.onload = function()
+// {
+// 	WebFont.load(
+// 	{
+// 		// this event is triggered when the fonts have been rendered
+// 		active : function()
+// 		{
+// 			start();
+// 		},
 
-        // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
-		fontloading : doMagic,
+//         // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
+// 		fontloading : doMagic,
 
-		// multiple fonts can be passed here
-		google :
-		{
-			families: [ fontName ]
-		}
-	});
-};
+// 		// multiple fonts can be passed here
+// 		google :
+// 		{
+// 			families: [ fontName ]
+// 		}
+// 	});
+// };
 
-function doMagic(){
-	// create <p> tag with our font and render some text secretly
-	var el = document.createElement('p');
-	el.style.fontFamily = fontName;
-	el.style.fontSize = "0px";
-	el.style.visibility = "hidden";
-	el.innerHTML = '.';
+// function doMagic(){
+// 	// create <p> tag with our font and render some text secretly
+// 	var el = document.createElement('p');
+// 	el.style.fontFamily = fontName;
+// 	el.style.fontSize = "0px";
+// 	el.style.visibility = "hidden";
+// 	el.innerHTML = '.';
 	
-	document.body.appendChild(el);
-};
+// 	document.body.appendChild(el);
+// };
 
+start();
 function start(){
     let duckLeft, duckRight, sky;
     let player;
