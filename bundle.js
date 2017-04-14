@@ -213,8 +213,6 @@ function start(){
         antialias:false, transparent:false, resolution: 1
     });
 
-    renderer.view.style.width = window.innerWidth + 'px';
-    renderer.view.style.height = window.innerHeight + 'px';
     const mousePosition = renderer.plugins.interaction.mouse.global;
     renderer.autoResize = true;
     renderer.backgroundColor = 0x000000;
@@ -326,10 +324,6 @@ function start(){
         gameScene.visible = true;
     }
 
-    window.addEventListener("resize", function(event){
-        renderer.view.style.width = window.innerWidth + 'px';
-        renderer.view.style.height = window.innerHeight + 'px';
-    });
 };
 
 
