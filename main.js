@@ -138,7 +138,12 @@ function start(){
     .add(imageResources)
     .load(function setup() {
                 // set up gameScene
+                var skyTexture = TextureCache[skyPath];
                 sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
+                const newSpriteHeight = window.innerHeight / 1.5;
+                const scaleRatio = sky.tileScale.y / newSpriteHeight;
+                sky.tileScale.y = 0.75;
+                sky.tileScale.x = 0.75;
                 gameScene.addChild(sky);
 
                 duckRight = new Sprite(TextureCache[duckRightPath]);
