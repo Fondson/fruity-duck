@@ -358,7 +358,6 @@ function start(){
     }
 
     function reset(){
-        player.score = 0;
         fruitDropDelay.delay = fruitDropDelay.default;
         state = play;
         gameOverScene.visible = false;
@@ -55827,8 +55826,7 @@ class Player{
         const globalDiffY = curMousePos.y - centerMousePos.y;
         const newX = this.centerPos.x + globalDiffX;
         const newY = this.centerPos.y + globalDiffY;
-        if (math.abs(newX - this.sprite.x) < 2){}
-        else if (newX < this.sprite.x){
+        if (newX < this.sprite.x){
             this.turnLeft();
         }else{
             this.turnRight();
@@ -55842,7 +55840,7 @@ class Player{
             this.sprite.vx = math.abs(curMousePosition.x - this.sprite.x);
             this.sprite.vy = math.abs(curMousePosition.y - this.sprite.y);
 
-            if (math.abs(this.sprite.x - curMousePosition.x) <= 2){} // do nothing if x's are essentially the same
+            if (math.abs(this.sprite.x - curMousePosition.x) <= 3){} // do nothing if x's are essentially the same
             else if (this.sprite.x < curMousePosition.x){
                 this.sprite.x += this.sprite.vx;
                 this.turnRight();
@@ -55852,7 +55850,7 @@ class Player{
                 this.turnLeft();
             }
 
-            if (math.abs(this.sprite.y - curMousePosition.y) <= 2){} // do nothing if y's are essentially the same
+            if (math.abs(this.sprite.y - curMousePosition.y) <= 3){} // do nothing if y's are essentially the same
             else if (this.sprite.y < curMousePosition.y){
                 this.sprite.y += this.sprite.vy;
             }
@@ -55865,6 +55863,7 @@ class Player{
     }
     clear(){
         this.delayedMousePosition = [];
+        this.score = 0;
         // reset player position
         if (isMobile){
             this.sprite.position.set((window.innerWidth - this.sprite.width) / 2, 

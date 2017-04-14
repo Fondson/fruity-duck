@@ -260,7 +260,6 @@ function start(){
     }
 
     function reset(){
-        player.score = 0;
         fruitDropDelay.delay = fruitDropDelay.default;
         state = play;
         gameOverScene.visible = false;
