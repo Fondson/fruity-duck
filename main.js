@@ -254,7 +254,6 @@ function start(){
         endScoreText.setText(player.score);
         gameOverScene.visible = true;
 
-        player.clear();
         fruits.clear();
         poison.clear();
     }
@@ -264,6 +263,7 @@ function start(){
         state = play;
         gameOverScene.visible = false;
         gameScene.visible = true;
+        player.clear();
     }
 
     window.addEventListener("resize", function(event){

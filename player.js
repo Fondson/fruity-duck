@@ -74,7 +74,8 @@ class Player{
         const globalDiffY = curMousePos.y - centerMousePos.y;
         const newX = this.centerPos.x + globalDiffX;
         const newY = this.centerPos.y + globalDiffY;
-        if (newX < this.sprite.x){
+        if (math.abs(newX - this.sprite.x) < 1){}
+        else if (newX < this.sprite.x){
             this.turnLeft();
         }else{
             this.turnRight();
