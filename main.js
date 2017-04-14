@@ -69,9 +69,13 @@ function start(){
     let player;
     const duck = new Container();
     const gameScene = new Container();
+    const playableGameObjects = new Container();
     const gameOverScene = new Container();
     const fruits = new Fruits(gameScene);
     const poison = new Poison(gameScene);
+    const stage = new Container();
+    let scoreText;
+    let endScoreText;
 
     const mobileMousePos = { x: -1, y: -1 };
     const touchCenter = { x: -1, y: -1};
@@ -130,9 +134,6 @@ function start(){
     //Add the canvas to the HTML document
     document.body.appendChild(renderer.view);
 
-    //Create a container object called the `stage`
-    const stage = new Container();
-
     // loading sprites
     loader
     .add(imageResources)
@@ -144,7 +145,7 @@ function start(){
                 const scaleRatio = sky.tileScale.y / newSpriteHeight;
                 sky.tileScale.y = 0.75;
                 sky.tileScale.x = 0.75;
-                gameScene.addChild(sky);
+                playableGameObjects.addChild(sky);
 
                 duckRight = new Sprite(TextureCache[duckRightPath]);
                 duckLeft = new Sprite(TextureCache[duckLeftPath]);
@@ -158,12 +159,22 @@ function start(){
                 else duck.position.set(mousePosition.x, mousePosition.y);
 
                 player = isMobile? new Player(duck, mobileMousePos): new Player(duck, mousePosition);
-                gameScene.addChild(duck);
+                playableGameObjects.addChild(duck);
+
+                scoreTextFont = window.innerHeight / 15;
+                scoreText = new Text(
+                    "0",
+                    {font: scoreTextFont + "px Press Start 2P", fill: "black"}
+                );
+                scoreText.y = window.innerHeight - scoreText.height * 1.2;
+                scoreText.x = 10;
+                
+                gameScene.addChild(playableGameObjects);
+                gameScene.addChild(scoreText);
 
                 stage.addChild(gameScene);
 
                 // set up gameOverScene
-                gameOverScene.visible = false;
                 const loseMessage = new Text(
                     "You lost!",
                     {font: "50px Press Start 2P", fill: "white"}
@@ -171,20 +182,27 @@ function start(){
 
                 ScaleSprite.fromWidthRatio(loseMessage, 2.5);
                 loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
-                loseMessage.y = window.innerHeight / 3;
-
-
+                loseMessage.y = window.innerHeight / 3 * 2;
                 gameOverScene.addChild(loseMessage);
-
+                
                 const restartMessage = new Text(
                     "Click to restart",
                     {font: "50px Press Start 2P", fill: "white"}
                 );
                 ScaleSprite.fromWidthRatio(restartMessage, 2);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
-                restartMessage.y = window.innerHeight / 3 + loseMessage.height + 10;     
+                restartMessage.y = loseMessage.y + loseMessage.height + 10;  
                 gameOverScene.addChild(restartMessage);
 
+                endScoreText = new Text(
+                    '0',
+                    {font: window.innerHeight / 5 + "px Press Start 2P", fill: "white"}
+                );
+                endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
+                endScoreText.y = window.innerHeight / 3;
+                gameOverScene.addChild(endScoreText);
+
+                gameOverScene.visible = false;
                 stage.addChild(gameOverScene);
 
                 //Tell the `renderer` to `render` the `stage`
@@ -227,10 +245,13 @@ function start(){
             fruits.add(pearPath);
             poison.add(poisonApplePath);
         }
+        scoreText.setText(player.score);
     }
 
     function end(){
         gameScene.visible = false;
+        endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
+        endScoreText.setText(player.score);
         gameOverScene.visible = true;
 
         player.clear();
@@ -239,6 +260,7 @@ function start(){
     }
 
     function reset(){
+        player.score = 0;
         fruitDropDelay.delay = fruitDropDelay.default;
         state = play;
         gameOverScene.visible = false;

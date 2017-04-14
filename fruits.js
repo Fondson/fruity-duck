@@ -35,22 +35,23 @@ class Fruits{
             const fruit = this.list.current;
             fruit.y += fruit.vy;
             if (fruit.y >= window.innerHeight){
-                this.reachedEnd(fruit, funcArgs);
+                this.reachedEnd(fruit, funcArgs, player);
             }
             else if (player.hit(fruit)){
-                this.hitPlayer(fruit, funcArgs);
+                this.hitPlayer(fruit, funcArgs, player);
             }
         }
         return funcArgs.returnVal;
     }
-    reachedEnd(fruit, funcArgs){
+    reachedEnd(fruit, funcArgs, player){
         funcArgs.done = true;
         funcArgs.returnVal = true;
     }
-    hitPlayer(fruit, funcArgs){
+    hitPlayer(fruit, funcArgs, player){
         fruit.visible = false;
         this.list.removeCurrent();
         funcArgs.returnVal = false;
+        player.score += 1;
     }
     clear(){
         while(this.list.length){
