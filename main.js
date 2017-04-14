@@ -29,40 +29,40 @@ const Fruits = require('./fruits');
 const Poison = require('./poison');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
+const duckToScreenHeightRatio = 9;
 
-// window.onload = function()
-// {
-// 	WebFont.load(
-// 	{
-// 		// this event is triggered when the fonts have been rendered
-// 		active : function()
-// 		{
-// 			start();
-// 		},
+window.onload = function()
+{
+	WebFont.load(
+	{
+		// this event is triggered when the fonts have been rendered
+		active : function()
+		{
+			start();
+		},
 
-//         // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
-// 		fontloading : doMagic,
+        // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
+		fontloading : doMagic,
 
-// 		// multiple fonts can be passed here
-// 		google :
-// 		{
-// 			families: [ fontName ]
-// 		}
-// 	});
-// };
+		// multiple fonts can be passed here
+		google :
+		{
+			families: [ fontName ]
+		}
+	});
+};
 
-// function doMagic(){
-// 	// create <p> tag with our font and render some text secretly
-// 	var el = document.createElement('p');
-// 	el.style.fontFamily = fontName;
-// 	el.style.fontSize = "0px";
-// 	el.style.visibility = "hidden";
-// 	el.innerHTML = '.';
+function doMagic(){
+	// create <p> tag with our font and render some text secretly
+	var el = document.createElement('p');
+	el.style.fontFamily = fontName;
+	el.style.fontSize = "0px";
+	el.style.visibility = "hidden";
+	el.innerHTML = '.';
 	
-// 	document.body.appendChild(el);
-// };
+	document.body.appendChild(el);
+};
 
-start();
 function start(){
     let duckLeft, duckRight, sky;
     let player;
@@ -144,6 +144,13 @@ function start(){
                 duckLeft = new Sprite(TextureCache[duckLeftPath]);
                 duck.addChild(duckRight);
                 duck.addChild(duckLeft);
+
+                // scale sprite
+                const newDuckHeight = window.innerHeight / duckToScreenHeightRatio;
+                const scaleRatio = duck.height / newDuckHeight;
+                duck.height = newDuckHeight;
+                duck.width = duck.width / scaleRatio;
+
                 if (isMobile) {
                 duck.position.set((window.innerWidth - duck.width) / 2, 
                     window.innerHeight - duck.height - 20);
@@ -159,7 +166,7 @@ function start(){
                 gameOverScene.visible = false;
                 const loseMessage = new Text(
                     "You lost!",
-                    {font: "40px Press Start 2P", fill: "white"}
+                    {font: "35px Press Start 2P", fill: "white"}
                 );
                 loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
                 loseMessage.y = window.innerHeight / 3;            
@@ -167,7 +174,7 @@ function start(){
 
                 const restartMessage = new Text(
                     "Click to restart",
-                    {font: "25px Press Start 2P", fill: "white"}
+                    {font: "20px Press Start 2P", fill: "white"}
                 );
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
                 restartMessage.y = window.innerHeight / 3 + loseMessage.height + 30;            
@@ -233,6 +240,10 @@ function start(){
         gameScene.visible = true;
     }
 
+    window.addEventListener("resize", function(event){
+        renderer.view.style.width = window.innerWidth + 'px';
+        renderer.view.style.height = window.innerHeight + 'px';
+    });
 };
 
 

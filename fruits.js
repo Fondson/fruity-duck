@@ -19,10 +19,17 @@ class Fruits{
         this.list = new LinkedList();
     }
     add(path){
-        this.list.push(new Sprite(TextureCache[path]));
-        const newFruit = this.list.tail;
+        const newFruit = new Sprite(TextureCache[path])
+
+        // scale sprite
+        const newFruitHeight = window.innerHeight / this.fruitToScreenHeightRatio;
+        const scaleRatio = newFruit.height / newFruitHeight;
+        newFruit.height = newFruitHeight;
+        newFruit.width = newFruit.width / scaleRatio;
+
         newFruit.x = random(newFruit.width * 2, window.innerWidth -  newFruit.width * 2);
         newFruit.vy = random(1, this.velCap);
+        this.list.push(newFruit);
         if (this.velCap < 6) this.velCap += 0.005;
         this.gameScene.addChild(newFruit);
     }
@@ -59,6 +66,9 @@ class Fruits{
     }
     get defaultVelCap(){
         return 4;
+    }
+    get fruitToScreenHeightRatio(){
+        return 18;
     }
 }
 
