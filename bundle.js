@@ -239,8 +239,8 @@ function start(){
                 sky = new PIXI.TilingSprite(TextureCache[skyPath], window.innerWidth, window.innerHeight);
                 const newSpriteHeight = window.innerHeight / 1.5;
                 const scaleRatio = sky.tileScale.y / newSpriteHeight;
-                sky.tileScale.y = 0.6;
-                sky.tileScale.x = 0.6;
+                sky.tileScale.y = 0.75;
+                sky.tileScale.x = 0.75;
                 gameScene.addChild(sky);
 
                 duckRight = new Sprite(TextureCache[duckRightPath]);
@@ -266,7 +266,7 @@ function start(){
                     {font: "50px Press Start 2P", fill: "white"}
                 );
 
-                ScaleSprite.fromWidthRatio(loseMessage, 3);
+                ScaleSprite.fromWidthRatio(loseMessage, 2.5);
                 loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
                 loseMessage.y = window.innerHeight / 3;
 
@@ -277,7 +277,7 @@ function start(){
                     "Click to restart",
                     {font: "50px Press Start 2P", fill: "white"}
                 );
-                ScaleSprite.fromWidthRatio(restartMessage, 2.5);
+                ScaleSprite.fromWidthRatio(restartMessage, 2);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
                 restartMessage.y = window.innerHeight / 3 + loseMessage.height + 10;     
                 gameOverScene.addChild(restartMessage);
