@@ -76,6 +76,8 @@ function start(){
     const stage = new Container();
     let scoreText;
     let endScoreText;
+    let loseMessage;
+    let restartMessage;
 
     const mobileMousePos = { x: -1, y: -1 };
     const touchCenter = { x: -1, y: -1};
@@ -175,31 +177,29 @@ function start(){
                 stage.addChild(gameScene);
 
                 // set up gameOverScene
-                const loseMessage = new Text(
-                    "You lost!",
-                    {font: "50px Press Start 2P", fill: "white"}
-                );
-
-                ScaleSprite.fromWidthRatio(loseMessage, 2.5);
-                loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
-                loseMessage.y = window.innerHeight / 3 * 2;
-                gameOverScene.addChild(loseMessage);
-                
-                const restartMessage = new Text(
-                    "Click to restart",
-                    {font: "50px Press Start 2P", fill: "white"}
-                );
-                ScaleSprite.fromWidthRatio(restartMessage, 2);
-                restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
-                restartMessage.y = loseMessage.y + loseMessage.height + 10;  
-                gameOverScene.addChild(restartMessage);
-
                 endScoreText = new Text(
                     '0',
                     {font: window.innerHeight / 5 + "px Press Start 2P", fill: "white"}
                 );
                 endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
                 endScoreText.y = window.innerHeight / 3;
+
+                loseMessage = new Text(
+                    "You lost!",
+                    {font: "50px Press Start 2P", fill: "white"}
+                );
+
+                ScaleSprite.fromWidthRatio(loseMessage, 2.5);
+                loseMessage.x = (window.innerWidth - loseMessage.width) / 2;
+                gameOverScene.addChild(loseMessage);
+                
+                restartMessage = new Text(
+                    "Click to restart",
+                    {font: "50px Press Start 2P", fill: "white"}
+                );
+                ScaleSprite.fromWidthRatio(restartMessage, 2);
+                restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
+                gameOverScene.addChild(restartMessage);
                 gameOverScene.addChild(endScoreText);
 
                 gameOverScene.visible = false;
@@ -249,9 +249,18 @@ function start(){
     }
 
     function end(){
-        gameScene.visible = false;
+        // layout gameOverScene text
         endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
         endScoreText.setText(player.score);
+        if (endScoreText.width >= window.innerWidth){
+            ScaleSprite.fromWidthRatio(endScoreText, 1.2);
+        }else{
+            endScoreText.scale.x = endScoreText.scale.y;
+        }
+        loseMessage.y = endScoreText.y + endScoreText.height + 20;
+        restartMessage.y = loseMessage.y + loseMessage.height + 10;  
+
+        gameScene.visible = false;
         gameOverScene.visible = true;
 
         fruits.clear();
