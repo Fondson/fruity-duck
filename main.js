@@ -12,15 +12,26 @@ const duckRightPath = a.duckRightPath;
 const duckLeftPath = a.duckLeftPath;
 const skyPath = a.skyPath;
 const pearPath = a.pearPath;
+const cherryPath = a.cherryPath;
+const bananaPath = a.bananaPath;
+const pineapplePath = a.pineapplePath;
+const strawberryPath = a.strawberryPath;
 const poisonApplePath = a.poisonApplePath;
 
+
+const fruitResources = [
+      pearPath,
+      cherryPath,
+      bananaPath,
+      pineapplePath,
+      strawberryPath
+];
 const imageResources = [
       duckRightPath,
       duckLeftPath,
       skyPath,
-      pearPath,
       poisonApplePath
-      ];
+].concat(fruitResources);
 let state;
 
 const isMobile = require('./detectMobile');
@@ -28,6 +39,7 @@ const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
 const ScaleSprite = require('./scaleSprite');
+const random = require('./random');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
 const duckToScreenHeightRatio = 9;
@@ -242,7 +254,9 @@ function start(){
                 fruitDropDelay.delay -= 1;
             }
             fruitDropDelay.counter = 0;
-            fruits.add(pearPath);
+            const path = fruitResources[parseInt(random(0, fruitResources.length - 1))];
+            fruits.add(path);
+            console.log(path);
             poison.add(poisonApplePath);
         }
         scoreText.setText(player.score);
