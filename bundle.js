@@ -356,9 +356,7 @@ function start(){
                 fruitDropDelay.delay -= 1;
             }
             fruitDropDelay.counter = 0;
-            const path = fruitResources[parseInt(random(0, fruitResources.length - 1))];
-            fruits.add(path);
-            console.log(path);
+            fruits.add(fruitResources[parseInt(random(0, fruitResources.length - 1))]);
             poison.add(poisonApplePath);
         }
         scoreText.setText(player.score);
