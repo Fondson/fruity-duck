@@ -141,7 +141,6 @@ const Player = require('./player');
 const Fruits = require('./fruits');
 const Poison = require('./poison');
 const ScaleSprite = require('./scaleSprite');
-const random = require('./random');
 let type = "WebGL";
 const fontName = 'Press Start 2P';
 const duckToScreenHeightRatio = 9;
@@ -199,8 +198,6 @@ function start(){
     if(!PIXI.utils.isWebGLSupported()){
         type = "canvas";
     }
-
-    PIXI.utils.sayHello(type);
 
     // Scale mode for all textures, will retain pixelation
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -356,7 +353,7 @@ function start(){
                 fruitDropDelay.delay -= 1;
             }
             fruitDropDelay.counter = 0;
-            fruits.add(fruitResources[parseInt(random(0, fruitResources.length - 1))]);
+            fruits.add(fruitResources[parseInt(Math.random() * 100 % (fruitResources.length - 1))]);
             poison.add(poisonApplePath);
         }
         scoreText.setText(player.score);
@@ -398,7 +395,7 @@ function start(){
 
 
 
-},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521,"./poison":522,"./random":523,"./scaleSprite":524}],5:[function(require,module,exports){
+},{"./alias":1,"./detectMobile":2,"./fruits":3,"./player":521,"./poison":522,"./scaleSprite":524}],5:[function(require,module,exports){
 /**
  * @license Complex.js v2.0.1 11/02/2016
  *
