@@ -6,7 +6,7 @@ An endless collector game made using the 2D HTML5 rendering engine [pixi.js](htt
 # Features
 
 - uses [sw-precache](https://github.com/GoogleChrome/sw-precache) to cache files for offline play
-- uses a [web manifest](https://developer.mozilla.org/en-US/docs/Web/Manifest) to specify app properties
+- uses a [web app manifest](https://developer.mozilla.org/en-US/docs/Web/Manifest) to specify app properties
 - contains features of a [progessive web app](https://developers.google.com/web/progressive-web-apps/)
   - you can treat Fruity Duck as a regular mobile app, try adding it to your home screen!
 
