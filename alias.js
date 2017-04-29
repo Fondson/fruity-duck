@@ -11,7 +11,6 @@ module.exports = {
     cherryPath: 'images/cherry.png',
     bananaPath: 'images/banana.png',
     pineapplePath: 'images/pineapple.png',
-    strawberryPath: 'images/strawberry.png',
     duckRightPath: 'images/duck_right.png',
     duckLeftPath: 'images/duck_left.png',
     skyPath: 'images/sky.png',

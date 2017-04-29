@@ -15,7 +15,6 @@ const pearPath = a.pearPath;
 const cherryPath = a.cherryPath;
 const bananaPath = a.bananaPath;
 const pineapplePath = a.pineapplePath;
-const strawberryPath = a.strawberryPath;
 const poisonApplePath = a.poisonApplePath;
 
 
@@ -23,8 +22,7 @@ const fruitResources = [
       pearPath,
       cherryPath,
       bananaPath,
-      pineapplePath,
-      strawberryPath
+      pineapplePath
 ];
 const imageResources = [
       duckRightPath,
@@ -255,7 +253,7 @@ function start(){
                 fruitDropDelay.delay -= 1;
             }
             fruitDropDelay.counter = 0;
-            fruits.add(fruitResources[parseInt(Math.random() * 100 % (fruitResources.length - 1))]);
+            fruits.add(fruitResources[parseInt(Math.random() * 100 % (fruitResources.length))]);
             poison.add(poisonApplePath);
         }
         scoreText.setText(player.score);
