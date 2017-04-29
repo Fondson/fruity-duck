@@ -152,7 +152,11 @@ window.onload = function()
 		// this event is triggered when the fonts have been rendered
 		active : function()
 		{
-			start();
+			// let browser take a breath. Some fonts may require more room for taking deep breath
+			setTimeout(function()
+			{
+				start();
+			}, 500);
 		},
 
         // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
@@ -277,7 +281,7 @@ function start(){
                 scoreTextFont = window.innerHeight / 15;
                 scoreText = new Text(
                     "0",
-                    {font: scoreTextFont + "px Press Start 2P", fill: "black"}
+                    {font: scoreTextFont + "px " + fontName, fill: "black"}
                 );
                 scoreText.y = window.innerHeight - scoreText.height * 1.2;
                 scoreText.x = 10;
@@ -290,14 +294,14 @@ function start(){
                 // set up gameOverScene
                 endScoreText = new Text(
                     '0',
-                    {font: window.innerHeight / 5 + "px Press Start 2P", fill: "white"}
+                    {font: window.innerHeight / 5 + "px " + fontName, fill: "white"}
                 );
                 endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
                 endScoreText.y = window.innerHeight / 3;
 
                 loseMessage = new Text(
                     "You lost!",
-                    {font: "50px Press Start 2P", fill: "white"}
+                    {font: "50px " + fontName, fill: "white"}
                 );
 
                 ScaleSprite.fromWidthRatio(loseMessage, 2.5);
@@ -306,7 +310,7 @@ function start(){
                 
                 restartMessage = new Text(
                     "Click to restart",
-                    {font: "50px Press Start 2P", fill: "white"}
+                    {font: "50px " + fontName, fill: "white"}
                 );
                 ScaleSprite.fromWidthRatio(restartMessage, 2);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
