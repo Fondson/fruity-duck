@@ -4,12 +4,26 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0 maximum-scale=1.0, user-scalable=no" />
+    <link rel="manifest" href="manifest.json">
+    <title>Fruity Duck</title>
     <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.4.3/pixi.min.js"></script>
-    <title>Fruity Duck</title>
-    <link rel="icon" href="images/duck_right.png">
+    <link rel="icon" href="./images/favicon.ico">
+
+    <!-- Add to home screen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Weather PWA">
+    <link rel="apple-touch-icon" href="./images/icons/icon-152x152.png">
+
+    <!-- Tile Icon for Windows -->
+    <meta name="msapplication-TileImage" content="./images/icons/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#2F3BA2">
 </head>
 <body>
     <script src="bundle.js"></script>
+    <script>
+        "serviceWorker"in navigator&&navigator.serviceWorker.register("service-worker.js")["catch"](function(e){console.warn(e),console.warn("(This warning can be safely ignored outside of the production build.)")})
+    </script>
 </body>
 </html>

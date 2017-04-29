@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "sw-precache": "^5.1.0"
+  },
+  "devDependencies": {
+    "sw-precache": "^5.1.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
