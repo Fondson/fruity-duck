@@ -50,7 +50,11 @@ window.onload = function()
 		// this event is triggered when the fonts have been rendered
 		active : function()
 		{
-			start();
+			// let browser take a breath. Some fonts may require more room for taking deep breath
+			setTimeout(function()
+			{
+				start();
+			}, 500);
 		},
 
         // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
