@@ -9,6 +9,7 @@ An endless collector game made using the 2D HTML5 rendering engine [pixi.js](htt
 - uses a [web app manifest](https://developer.mozilla.org/en-US/docs/Web/Manifest) to specify app properties
 - contains features of a [progessive web app](https://developers.google.com/web/progressive-web-apps/)
   - you can treat Fruity Duck as a regular mobile app, try adding it to your home screen!
+- stores high score in-browser using [localforage](https://github.com/localForage/localForage)
 
 
 # Screenshots
