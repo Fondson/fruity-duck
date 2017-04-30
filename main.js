@@ -91,6 +91,7 @@ function start(){
     let endScoreText;
     let loseMessage;
     let restartMessage;
+    let highScoreMessage;
 
     const mobileMousePos = { x: -1, y: -1 };
     const touchCenter = { x: -1, y: -1};
@@ -210,8 +211,36 @@ function start(){
                 );
                 ScaleSprite.fromWidthRatio(restartMessage, 2);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
+
+                highScoreMessage = new Text(
+                    "",
+                    {font: "15px " + fontName, fill: "white"}
+                );
+                highScoreMessage.x = 10;
+                highScoreMessage.y = window.innerHeight - 10 - highScoreMessage.height;
+
+                localforage.getItem('highScore').then(function(value) {
+                    // value was not found in the data store
+                    if (value === null){
+                        localforage.setItem('highScore', 0).then(function (value) {
+                          highScoreMessage.setText("High Score: " + value);
+                          player.highScore = value;
+                          console.log("Set value: " + value);
+                      }).catch(function(err) {
+                          console.log(err);
+                      });
+                    }else{
+                      highScoreMessage.setText("High Score: " + value);
+                      player.highScore = value;
+                      console.log("Got value: " + value);
+                    }
+                }).catch(function(err) {
+                    console.log(err);
+                });
+
                 gameOverScene.addChild(restartMessage);
                 gameOverScene.addChild(endScoreText);
+                gameOverScene.addChild(highScoreMessage);
 
                 gameOverScene.visible = false;
                 stage.addChild(gameOverScene);
@@ -270,6 +299,17 @@ function start(){
         }
         loseMessage.y = endScoreText.y + endScoreText.height + 20;
         restartMessage.y = loseMessage.y + loseMessage.height + 10;  
+
+        // update high score if needed
+        if (player.score > player.highScore){
+            player.highScore = player.score;
+            localforage.setItem('highScore', player.score).then(function (value) {
+                highScoreMessage.setText("High Score: " + value);
+                console.log(value);
+            }).catch(function(err) {
+                console.log(err);
+            });
+        }
 
         gameScene.visible = false;
         gameOverScene.visible = true;

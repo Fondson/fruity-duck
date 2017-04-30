@@ -9,6 +9,7 @@ class Player{
         this.delayedMousePosition = []; // delayed array of coordinates
         this.sprite = sprite;
         this.score = 0;
+        this.highScore = 0;
         this.mousePosition = mousePosition;
         this.turnRight();
     }
