@@ -118,7 +118,6 @@ const bananaPath = a.bananaPath;
 const pineapplePath = a.pineapplePath;
 const poisonApplePath = a.poisonApplePath;
 
-
 const fruitResources = [
       pearPath,
       cherryPath,
@@ -279,7 +278,7 @@ function start(){
                 scoreTextFont = window.innerHeight / 15;
                 scoreText = new Text(
                     "0",
-                    {font: scoreTextFont + "px " + fontName, fill: "black"}
+                    {font: scoreTextFont + "px ", fontFamily: fontName, fill: "black", padding: 20}
                 );
                 scoreText.y = window.innerHeight - scoreText.height * 1.2;
                 scoreText.x = 10;
@@ -292,14 +291,14 @@ function start(){
                 // set up gameOverScene
                 endScoreText = new Text(
                     '0',
-                    {font: window.innerHeight / 5 + "px " + fontName, fill: "white"}
+                    {font: window.innerHeight / 5 + "px ", fontFamily: fontName, fill: "white", padding: 20}
                 );
                 endScoreText.x = (window.innerWidth - endScoreText.width) / 2;
                 endScoreText.y = window.innerHeight / 3;
 
                 loseMessage = new Text(
                     "You lost!",
-                    {font: "50px " + fontName, fill: "white"}
+                    {font: "50px ", fontFamily: fontName, fill: "white", padding: 20}
                 );
 
                 ScaleSprite.fromWidthRatio(loseMessage, 2.5);
@@ -308,14 +307,14 @@ function start(){
                 
                 restartMessage = new Text(
                     "Click to restart",
-                    {font: "50px " + fontName, fill: "white"}
+                    {font: "50px ", fontFamily: fontName, fill: "white", padding: 20}
                 );
                 ScaleSprite.fromWidthRatio(restartMessage, 2);
                 restartMessage.x = (window.innerWidth - restartMessage.width) / 2;
 
                 highScoreMessage = new Text(
                     "",
-                    {font: "15px " + fontName, fill: "white"}
+                    {font: "15px ", fontFamily: fontName, fill: "white", padding: 20}
                 );
                 highScoreMessage.x = 10;
                 highScoreMessage.y = window.innerHeight - 10 - highScoreMessage.height;
