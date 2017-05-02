@@ -31,6 +31,7 @@ const imageResources = [
 ].concat(fruitResources);
 let state;
 
+var FontFaceObserver = require('fontfaceobserver');
 const isMobile = require('./detectMobile');
 const Player = require('./player');
 const Fruits = require('./fruits');
@@ -40,41 +41,11 @@ let type = "WebGL";
 const fontName = 'Press Start 2P';
 const duckToScreenHeightRatio = 9;
 
-window.onload = function()
-{
-	WebFont.load(
-	{
-		// this event is triggered when the fonts have been rendered
-		active : function()
-		{
-			// let browser take a breath. Some fonts may require more room for taking deep breath
-			setTimeout(function()
-			{
-				start();
-			}, 500);
-		},
+var font = new FontFaceObserver(fontName);
 
-        // when font is loaded do some magic, so font can be correctly rendered immediately after PIXI is initialized
-		fontloading : doMagic,
-
-		// multiple fonts can be passed here
-		google :
-		{
-			families: [ fontName ]
-		}
-	});
-};
-
-function doMagic(){
-	// create <p> tag with our font and render some text secretly
-	var el = document.createElement('p');
-	el.style.fontFamily = fontName;
-	el.style.fontSize = "0px";
-	el.style.visibility = "hidden";
-	el.innerHTML = '.';
-	
-	document.body.appendChild(el);
-};
+font.load().then(function () {
+    start();
+});
 
 function start(){
     let duckLeft, duckRight, sky;
