@@ -1,7 +1,7 @@
 # Fruity Duck
 An endless collector game made using the 2D HTML5 rendering engine [pixi.js](https://github.com/pixijs/pixi.js?utm_source=html5weekly).
 
-[Play the game!](www.fondsontran.com/fruity-duck/)
+[Play the game!](https://fondson.github.io/fruity-duck/)
 
 # Features
 
